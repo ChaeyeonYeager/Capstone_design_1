@@ -5,6 +5,11 @@ const int IN1 = 7;
 const int IN2 = 6;
 const int ENA = 5;  // PWM 핀
 
+//사료분쇄 함수
+void rotateMotor(int speed);
+void motorGrinder();
+void stopMotor();
+
 void setup() {
  //사료분쇄 
   pinMode(IN1, OUTPUT);
