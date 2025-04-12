@@ -6,6 +6,6 @@ void handleFeedingLogic();
 float measureDistance(int trig, int echo);
 float getAverageDistance();
 void checkFoodLevel();
-bool isFeedingDone();
+bool isFoodInputDone();
 
 #endif
