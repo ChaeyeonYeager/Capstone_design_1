@@ -50,9 +50,9 @@ void checkFoodLevel() {
   }
 }
 
-bool isFeedingDone() {
-  // 이 부분은 급식이 완료되었는지 외부 조건에 따라 변경
-  // 예시: 디지털 핀 입력, 모터 종료 확인 등
+bool isFoodInputDone() {
+  // 이 부분은 사료가 투입되었는지 외부 조건에 따라 변경
+  // 예시: 모터 동작 완료, 센서 상태 등
   return true; // 임시로 항상 true 반환
 }
 
