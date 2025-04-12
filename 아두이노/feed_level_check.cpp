@@ -74,3 +74,17 @@ void handleFeedingLogic() {
     measuring_started = false;
   }
 } 
+
+
+// 메인 제어 cpp 파일에서는
+
+// void setup() {
+//   Serial.begin(9600);
+//   setupFeedingSystem();  // 센서 핀 세팅 등 초기 설정
+// }
+
+// void loop() {
+//   handleFeedingLogic();  // 급식 후 30분 뒤 자동으로 잔량 측정 및 LED 제어
+// }
+
+// 이런식으로 호출
