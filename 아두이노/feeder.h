@@ -33,6 +33,7 @@ private:
   float portionGrams;
   bool feedDoneToday[6];        // 각 시간별 급식 완료 여부
   float activityFactor;
+  bool isFoodInputDone;
 
   // 내부 함수
   void receiveBluetoothData();  // 블루투스 데이터 수신
@@ -41,6 +42,7 @@ private:
   String getTimeString(DateTime now); // "HH:MM" 시간 형식 반환
   void feedPortion(int index);  // 사료 급여 함수
   void resetFeedingFlags();     // 하루 급식 플래그 초기화
+  bool isFoodInputDoneStatus(); //상태확인 함수 
 };
 
 #endif

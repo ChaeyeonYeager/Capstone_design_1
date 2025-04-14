@@ -3,7 +3,7 @@
 
 // 생성자: 핀 번호 초기화 및 객체 생성
 Feeder::Feeder(int doutPin, int clkPin, int servoPin, int rxPin, int txPin)
-  : BT(rxPin, txPin), activityFactor(1.6) {
+  : BT(rxPin, txPin), activityFactor(1.6),isFoodInputDone(false) {
   scale.begin(doutPin, clkPin);
   servo.attach(servoPin);
 }
@@ -52,6 +52,7 @@ void Feeder::receiveBluetoothData() {
 
 void Feeder::parseBluetoothData(String input) {
   input.trim();
+
   int idx = 0;
   String parts[15];
 
@@ -127,6 +128,7 @@ void Feeder::feedPortion(int index) {
 
   servo.write(0);                  // 투입구 닫기
   feedDoneToday[index] = true;    // 급식 완료 표시
+  isFoodInputDone=true;
 
   Serial.println("급식 완료: " + String(weight, 1) + "g / 목표 " + String(target, 1) + "g");
 }
@@ -136,4 +138,9 @@ void Feeder::resetFeedingFlags() {
   for (int i = 0; i < 6; i++) {
     feedDoneToday[i] = false;
   }
+  isFoodInputDone=false;
+}
+
+bool isFoodInputDoneStatus() {
+  return isFoodInputDone;
 }
