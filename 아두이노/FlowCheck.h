@@ -14,6 +14,7 @@ public:
     void resetVolume(); // 누적된 물 양 0으로 초기화
 
     void pulseISR(); // 인터럽트에서 호출할 함수 => 펄스가 발생할 때마다 호출되는 함수
+    bool targetWater();
 
 private:
     uint8_t pin; // 연결 된 핀 번호 
