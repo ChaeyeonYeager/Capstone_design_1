@@ -1,5 +1,5 @@
 
-#include "feed_frinder.h"
+#include "feed_grinder.h"
 
 bool initFeedGrinder() {
  //사료분쇄 
