@@ -14,7 +14,7 @@ unsigned long feedingStartTime = 0;
 bool feeding_done = false;
 bool measuring_started = false;
 
-void setupFeedingSystem() {
+void initFeedingSystem() {
   pinMode(TRIG1, OUTPUT); pinMode(ECHO1, INPUT);
   pinMode(TRIG2, OUTPUT); pinMode(ECHO2, INPUT);
   pinMode(LED_PIN, OUTPUT);
