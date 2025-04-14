@@ -24,6 +24,9 @@ void motorGrinder() {
   stopMotor();        // 모터 정지
   delay(5000);        // 정지 상태 유지
 
+  alertFor3Seconds(); //
+
+
   isGrinding = true;
 }
 
@@ -39,6 +42,13 @@ void stopMotor() {
   digitalWrite(IN1, LOW);
   digitalWrite(IN2, LOW);
   analogWrite(ENA, 0);
+}
+
+// ✅ 알림 함수 (3초간 삐 소리)
+void alertFor3Seconds() {
+  digitalWrite(speakerPin, HIGH); // 삐 소리 시작
+  delay(3000);                    // 3초간 유지
+  digitalWrite(speakerPin, LOW);  // 소리 끄기
 }
 
 bool isGrindingDone()
