@@ -1,8 +1,6 @@
-include "feeding_calc"
+#include "feeding_calc.h"
 
-
-
-void foodWeightPerMeal_calc(int feedingCount, float dogWeight, float activeLvl, float calPerKg) {
+int foodWeightPerMeal_calc(int feedingCount, float dogWeight, float activeLvl, float calPerKg) {
   // ✅ RER 계산: 70 * (체중^0.75)
   float RER = 70 * pow(dogWeight, 0.75);
 
@@ -24,6 +22,6 @@ void foodWeightPerMeal_calc(int feedingCount, float dogWeight, float activeLvl, 
       Serial.println("========================");
 
   // ✅ 1회 급여량 계산: ((DER / calPerKg) * 1000) / 급여횟수
-  return;
+  return foodWeightPerMeal;
 
 }
