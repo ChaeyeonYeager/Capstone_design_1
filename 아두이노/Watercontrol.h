@@ -16,5 +16,6 @@ void initWaterSystem();
 void startWaterInjection();
 void waitForSoaking();
 void countFlowPulse();
+bool isSoakingDone();
 
 #endif
