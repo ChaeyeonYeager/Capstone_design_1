@@ -1,5 +1,5 @@
 #include <Arduino.h>
-
+#include <feeder.h>
 // ✅ 변수 선언
 int feedingCount;           // 하루 급여 횟수
 float dogWeight;            // 강아지 체중 (kg)
