@@ -1,9 +1,9 @@
 #include <Arduino.h>
 #include "Pump.h"
 #include "FlowCheck.h"
+#include "FlowCheck.cpp"
 
 #define RELAY_PIN 8
-#define TARGET_VOLUME_ML 200  // 목표 유량 ==> 이건 앞으로 수정해나가야..
 
 FlowSensor flowSensor(2);  // 인터럽트 핀 2번
 
@@ -16,16 +16,17 @@ void PumpController::begin() {
 }
 
 void PumpController::update() {
-  flowSensor.update();
+  flowSensor.update(); // 업데이트 후
+  flowSensor.targetWater(); // 목표 유량에 도달했는지 확인
   
-  // 펌프가 열려있고 토탈 유량이 타겟보다 많거나 같으면 닫기
-  if (pumpState && flowSensor.getTotalVolume() >= TARGET_VOLUME_ML) {
+  // 펌프가 열려있고 flowSensor.targetWater 함수의 반환 값이 true라면..
+  if (pumpState && flowSensor.targetWater()) {
     digitalWrite(RELAY_PIN, LOW);  // 펌프 OFF (닫힘)
     pumpState = false;
   }
 }
 
-//펌프 state 업데이트 후 값 반환환
+//펌프 state 업데이트 후 값 반환
 bool PumpController::isPumpOn() {
-  return pumpState;
+  return pumpState; // false인 경우가 잠긴 것..
 }
