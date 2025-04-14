@@ -1,12 +1,5 @@
 #include <Arduino.h>
-#include "feeding_grinder.h"
-
-// 사료분쇄 핀 연결 설정
-const int IN1 = 7;
-const int IN2 = 6;
-const int ENA = 5;  // PWM 핀
-
-bool isGrinding = false;
+#include "feed_grinder.h"
 
 void initmotorGrinder()
 {
