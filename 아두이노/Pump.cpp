@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include "pump.h"
+#include "Pump.h"
 #include "FlowCheck.h"
 
 #define RELAY_PIN 8
