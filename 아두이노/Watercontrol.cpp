@@ -19,44 +19,54 @@
 
 #include "WaterControl.h"
 
-volatile int flowPulseCount = 0;
-unsigned long lastPulseTime = 0;
+volatile int flowPulseCount = 0;  // 유량 센서에서 발생한 펄스 수
+unsigned long lastPulseTime = 0;  // 마지막 펄스 시간
+
+bool isSoaking = false;
 
 void initWaterSystem() {
   pinMode(pumpPin, OUTPUT);
   pinMode(flowSensorPin, INPUT_PULLUP);
   digitalWrite(pumpPin, LOW);
 
-  attachInterrupt(digitalPinToInterrupt(flowSensorPin), countFlowPulse, RISING);
+  attachInterrupt(digitalPinToInterrupt(flowSensorPin), countFlowPulse, RISING);  // 유량 센서의 펄스 신호를 감지하여 countFlowPulse 함수를 호출
 
-  Serial.print("목표 펄스 수 (100ml 기준): ");
-  Serial.println(targetPulseCount);
+  Serial.print("목표 펄스 수 (100ml 기준): ");  // 목표 펄스 수 출력
+  Serial.println(targetPulseCount); // 예: 100ml 기준 펄스 수
 }
 
 void startWaterInjection() {
-  flowPulseCount = 0;
-  Serial.println("물 투입 시작");
+  flowPulseCount = 0; // 펄스 카운트 초기화
+  Serial.println("물 투입 시작"); // 물 투입 시작 메시지 출력
 
-  digitalWrite(pumpPin, HIGH);
+  digitalWrite(pumpPin, HIGH);  // DC 펌프 작동 (ON)
 
-  while (flowPulseCount < targetPulseCount) {
-    if (millis() - lastPulseTime > 1000) {
+  while (flowPulseCount < targetPulseCount) { // 목표 펄스 수에 도달할 때까지 반복
+    if (millis() - lastPulseTime > 1000) {  // 1초마다 펄스 수 출력
       Serial.print("현재 펄스 수: ");
-      Serial.println(flowPulseCount);
+      Serial.println(flowPulseCount); // 현재 펄스 수 출력
       lastPulseTime = millis();
     }
   }
 
-  digitalWrite(pumpPin, LOW);
+  digitalWrite(pumpPin, LOW); // DC 펌프 정지 (OFF)
   Serial.println("물 투입 완료");
 }
 
 void waitForSoaking() {
   Serial.println("불림 대기 시작 (10분)");
-  delay(600000);
+  delay(600000);  // 10분 대기 (600000ms)
   Serial.println("불림 완료");
+
+  isSoaking = true;
 }
 
 void countFlowPulse() {
-  flowPulseCount++;
+  flowPulseCount++; // 펄스 카운트 증가
 }
+
+bool isSoakingDone() {
+    return isSoaking;
+}
+
+
