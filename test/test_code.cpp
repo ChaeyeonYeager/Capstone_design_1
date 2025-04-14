@@ -17,19 +17,23 @@ void loop() {
     Serial.print("유량 (mL/s): "); // 흐르고 있는 유량 출력
     Serial.print(flowSensor.getFlowRate()); 
 
-    Serial.print(" / 누적 유량 (mL): "); // 지금까지 흐른 누적 물 양 출력력
+    Serial.print("\n누적 유량 (mL): "); // 지금까지 흐른 누적 물 양 출력
     Serial.println(flowSensor.getTotalVolume());
 
-    pump.update();
+    // floweSensor.target 호출 후 타겟 유량에 도달하였는지 확인 
+    // 맞으면 실행
+    if(flowSensor.targetWater()){
+      pump.update();
 
-    bool currentPumpState = pump.isPumpOn(); // 펌프 상태 값 받기기
-    if (currentPumpState != lastPumpState) { // 상태가 달라질 때만 출력력
+      // 펌프 상태 업데이트 후 제대로 닫혔는지 확인
+      bool currentPumpState = pump.isPumpOn(); // 펌프 상태 값 받아보기
       if (currentPumpState) {
-        Serial.println("펌프 열림");
-      } else {
-        Serial.println("펌프 닫힘 - 목표 유량 도달");
+        Serial.println("\n펌프가 열려있음");
+      } 
+      else { //성공!!
+        Serial.println("\n펌프가 닫힘 - 목표 유량 도달");
+        return;
       }
-      lastPumpState = currentPumpState;
     }
 
     delay(1000); // 1초마다 출력
