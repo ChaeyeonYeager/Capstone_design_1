@@ -1,3 +1,4 @@
+// 블루투스 연결 여부 확인 코드
 #include <SoftwareSerial.h>
 
 // ===================== 핀 설정 =====================
@@ -16,6 +17,11 @@ void setup() {
 }
 
 void loop() {
+  handleBluetooth(); // loop 안에서는 이 함수만 호출
+}
+
+// ===================== 블루투스 통신 처리 함수 =====================
+void handleBluetooth() {
   // 블루투스 → 시리얼 모니터 출력
   if (BT.available()) {
     String input = BT.readStringUntil('\n');
