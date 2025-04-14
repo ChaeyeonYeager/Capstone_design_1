@@ -6,8 +6,7 @@ void initmotorGrinder()
     pinMode(IN1, OUTPUT);
     pinMode(IN2, OUTPUT);
     pinMode(ENA, OUTPUT);
-    Serial.begin(9600);
-    Serial.println("SZH-EK001 모터 드라이버 준비 완료");
+    pinMode(speakerPin, OUTPUT);
 }
 
 // ✅ 모터 동작 순서 함수
