@@ -22,6 +22,8 @@
 volatile int flowPulseCount = 0;  // 유량 센서에서 발생한 펄스 수
 unsigned long lastPulseTime = 0;  // 마지막 펄스 시간
 
+bool isSoaking = false;
+
 void initWaterSystem() {
   pinMode(pumpPin, OUTPUT);
   pinMode(flowSensorPin, INPUT_PULLUP);
@@ -56,10 +58,15 @@ void waitForSoaking() {
   delay(600000);  // 10분 대기 (600000ms)
   Serial.println("불림 완료");
 
-  return true; // 불림 완료 후 true 반환
+  isSoaking = true;
 }
 
 void countFlowPulse() {
   flowPulseCount++; // 펄스 카운트 증가
 }
+
+bool isSoakingDone() {
+    return isSoaking;
+}
+
 
