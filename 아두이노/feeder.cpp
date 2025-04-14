@@ -1,5 +1,5 @@
 // Feeder.cpp - 자동 급식기 제어 클래스 구현 파일
-#include "./feeder.h"
+#include <./feeder.h>
 
 // 생성자: 핀 번호 초기화 및 객체 생성
 Feeder::Feeder(int doutPin, int clkPin, int servoPin, int rxPin, int txPin)
@@ -8,10 +8,10 @@ Feeder::Feeder(int doutPin, int clkPin, int servoPin, int rxPin, int txPin)
   servo.attach(servoPin);
 }
 
-void Feeder::setup() {
-  Serial.begin(9600);
-  BT.begin(9600);
-  rtc.begin();
+void Feeder::init() {
+  Serial.begin(9600); // 아두이노 init
+  BT.begin(9600); // 블루투스 init
+  rtc.begin(); // rtc init 
 
   // RTC가 초기화되지 않았다면 현재 시간으로 설정
   if (rtc.lostPower()) {
@@ -23,8 +23,9 @@ void Feeder::setup() {
   scale.tare();             // 초기 0점 설정
 
   servo.write(0);           // 서보모터 닫힘 상태로 초기화
-
   resetFeedingFlags();      // 급식 상태 초기화
+
+  isFoodInputDone = false; 
 }
 
 void Feeder::loop() {
@@ -50,6 +51,7 @@ void Feeder::receiveBluetoothData() {
   }
 }
 
+// ex) 크림이,7,5,3,06:00,12:00,18:00,중간,3600 형태로 입력받음
 void Feeder::parseBluetoothData(String input) {
   input.trim();
 
@@ -91,11 +93,13 @@ void Feeder::parseBluetoothData(String input) {
 
 // 사료량 계산: 하루 총 에너지 → 사료량 → 회당 사료량 계산
 void Feeder::calculatePortion() {
-  float kcalPerGram = kcalPerKg / 1000.0;
-  float base = 30 * weight + 70;
-  float dailyCalories = base * activityFactor;
-  float dailyGrams = dailyCalories / kcalPerGram;
-  portionGrams = dailyGrams / feedCount;
+  // 랜덤값
+  feedCount = 2;           // 하루 2회 급여
+  weight = random(30, 80) / 10.0; // 3.0kg ~ 7.9kg 사이 무작위 체중
+  activityLevel = 1.6;            // 중성화된 성견
+  kcalPerKg = 3600;            // 1kg당 사료 칼로리 (예: 3600 kcal/kg)
+
+  portionGrams = foodWeightPerMeal_calc(feedCount,weight,activityLevel,kcalPerKg);
 }
 
 // 현재 시간을 "HH:MM" 형식으로 반환
