@@ -7,6 +7,7 @@
 #include "RTClib.h"
 #include <Servo.h>
 #include <SoftwareSerial.h>
+#include <string.h>
 
 class Feeder {
 public:
@@ -28,7 +29,7 @@ private:
   float weight;
   int feedCount;
   String feedTimes[6];           // 최대 6회 급식 시간
-  String activityLevel;
+  float activityLevel;
   int kcalPerKg;
   float portionGrams;
   bool feedDoneToday[6];        // 각 시간별 급식 완료 여부
@@ -36,6 +37,7 @@ private:
   bool isFoodInputDone;
 
   // 내부 함수
+  void init();
   void receiveBluetoothData();  // 블루투스 데이터 수신
   void parseBluetoothData(String input); // 수신된 데이터 파싱
   void calculatePortion();      // 1회 사료량 계산
@@ -43,6 +45,7 @@ private:
   void feedPortion(int index);  // 사료 급여 함수
   void resetFeedingFlags();     // 하루 급식 플래그 초기화
   bool isFoodInputDoneStatus(); //상태확인 함수 
+  
 };
 
 #endif
