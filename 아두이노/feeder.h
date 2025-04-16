@@ -7,7 +7,7 @@
 #include "RTClib.h"
 #include <Servo.h>
 #include <SoftwareSerial.h>
-#include <string.h>
+#include <./feeding_calc.h>
 
 class Feeder {
 public:
@@ -37,7 +37,7 @@ private:
   bool isFoodInputDone;
 
   // 내부 함수
-  void init();
+  void initFeeder(); // 블루투스, rtc, 로드셀 초기화
   void receiveBluetoothData();  // 블루투스 데이터 수신
   void parseBluetoothData(String input); // 수신된 데이터 파싱
   void calculatePortion();      // 1회 사료량 계산
