@@ -58,7 +58,7 @@ void waitForSoaking() {
   delay(600000);  // 10분 대기 (600000ms)
   Serial.println("불림 완료");
 
-  isSoaking = true;
+  isSoaking = true; // 불림 완료 상태로 설정
 }
 
 void countFlowPulse() {
@@ -66,7 +66,7 @@ void countFlowPulse() {
 }
 
 bool isSoakingDone() {
-    return isSoaking;
+    return isSoaking;   // 불림 완료 여부 반환
 }
 
 
