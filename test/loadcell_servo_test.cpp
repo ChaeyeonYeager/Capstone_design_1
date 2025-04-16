@@ -8,7 +8,8 @@
 #define CLK_PIN  A0      // HX711 CLK
 #define SERVO_PIN 9      // 서보모터 제어 핀
 
-// ======= 급식 기준 무게(g) =======
+// ======= 임의 급식 기준 무게(g) =======
+// 로드셀 보정을 위해 & 무게 감지 후 서보모터 작동하는 것 감지 위해
 #define TARGET_WEIGHT 30.0       // 목표 사료 g
 #define TOLERANCE 0.05           // ±5% 허용 오차
 
@@ -19,7 +20,7 @@ void setup() {
   Serial.begin(9600);
 
   scale.begin(DOUT_PIN, CLK_PIN);
-  scale.set_scale(2280.f); // 보정 필요
+  scale.set_scale(2280.f); // 보정 필요!!!!!!!!!!!!!!!! <필수>
   scale.tare();            // 초기 무게 설정
 
   servo.attach(SERVO_PIN);

@@ -8,7 +8,7 @@ Feeder::Feeder(int doutPin, int clkPin, int servoPin, int rxPin, int txPin)
   servo.attach(servoPin);
 }
 
-void Feeder::init() {
+void Feeder::initFeeder() {
   Serial.begin(9600); // 아두이노 init
   BT.begin(9600); // 블루투스 init
   rtc.begin(); // rtc init 
@@ -93,11 +93,12 @@ void Feeder::parseBluetoothData(String input) {
 
 // 사료량 계산: 하루 총 에너지 → 사료량 → 회당 사료량 계산
 void Feeder::calculatePortion() {
+  
   // 랜덤값
   feedCount = 2;           // 하루 2회 급여
   weight = random(30, 80) / 10.0; // 3.0kg ~ 7.9kg 사이 무작위 체중
   activityLevel = 1.6;            // 중성화된 성견
-  kcalPerKg = 3600;            // 1kg당 사료 칼로리 (예: 3600 kcal/kg)
+  kcalPerKg = 3600;               // 1kg당 사료 칼로리 (예: 3600 kcal/kg)
 
   portionGrams = foodWeightPerMeal_calc(feedCount,weight,activityLevel,kcalPerKg);
 }
