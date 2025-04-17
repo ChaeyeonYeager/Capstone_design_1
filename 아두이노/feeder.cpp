@@ -1,117 +1,27 @@
 // Feeder.cpp - 자동 급식기 제어 클래스 구현 파일
-#include <./feeder.h>
+#include <feeder.h>
 
-// 생성자: 핀 번호 초기화 및 객체 생성
-Feeder::Feeder(int doutPin, int clkPin, int servoPin, int rxPin, int txPin)
-  : BT(rxPin, txPin), activityFactor(1.6),isFoodInputDone(false) {
-  scale.begin(doutPin, clkPin);
-  servo.attach(servoPin);
-}
-
-void Feeder::initFeeder() {
-  Serial.begin(9600); // 아두이노 init
-  BT.begin(9600); // 블루투스 init
-  rtc.begin(); // rtc init 
-
-  // RTC가 초기화되지 않았다면 현재 시간으로 설정
-  if (rtc.lostPower()) {
-    rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
-  }
-
-  // 로드셀 설정
-  scale.set_scale(2280.f);  // 보정 계수 (환경에 따라 측정 필요)
-  scale.tare();             // 초기 0점 설정
-
-  servo.write(0);           // 서보모터 닫힘 상태로 초기화
-  resetFeedingFlags();      // 급식 상태 초기화
-
-  isFoodInputDone = false; 
-}
-
-void Feeder::loop() {
-  receiveBluetoothData();   // 설정 데이터 수신
-
+// 급식시간이 되었고 그 시간에 급식을 하지 않았다면 배식
+void checkAndFeed() {
   DateTime now = rtc.now();
   String currentTime = getTimeString(now); // 현재 시간 문자열
 
-  // 급식 시간과 비교하여 자동 급식 수행
   for (int i = 0; i < feedCount; i++) {
     if (!feedDoneToday[i] && currentTime == feedTimes[i]) {
       feedPortion(i);
     }
   }
-
-  delay(1000); // 1초 대기 (효율 조절)
 }
 
-void Feeder::receiveBluetoothData() {
-  if (BT.available()) {
-    String data = BT.readStringUntil('\n');
-    parseBluetoothData(data); // 수신된 설정 파싱
-  }
-}
-
-// ex) 크림이,7,5,3,06:00,12:00,18:00,중간,3600 형태로 입력받음
-void Feeder::parseBluetoothData(String input) {
-  input.trim();
-
-  int idx = 0;
-  String parts[15];
-
-  while (input.length() > 0) {
-    int comma = input.indexOf(',');
-    if (comma == -1) {
-      parts[idx++] = input;
-      break;
-    }
-    parts[idx++] = input.substring(0, comma);
-    input = input.substring(comma + 1);
-  }
-
-  petName = parts[0];
-  age = parts[1].toInt();
-  weight = parts[2].toFloat();
-  feedCount = parts[3].toInt();
-
-  for (int i = 0; i < feedCount; i++) {
-    feedTimes[i] = parts[4 + i];
-  }
-
-  activityLevel = parts[4 + feedCount];
-  kcalPerKg = parts[5 + feedCount].toInt();
-
-  // 활동량 수준에 따라 계수 설정
-  if (activityLevel == "낮음") activityFactor = 1.2;
-  else if (activityLevel == "중간") activityFactor = 1.6;
-  else if (activityLevel == "높음") activityFactor = 2.0;
-
-  calculatePortion();       // 1회 사료량 계산
-  resetFeedingFlags();      // 급식 상태 초기화
-
-  Serial.println("설정 완료: " + petName);
-}
-
-// 사료량 계산: 하루 총 에너지 → 사료량 → 회당 사료량 계산
-void Feeder::calculatePortion() {
-  
-  // 랜덤값
-  feedCount = 2;           // 하루 2회 급여
-  weight = random(30, 80) / 10.0; // 3.0kg ~ 7.9kg 사이 무작위 체중
-  activityLevel = 1.6;            // 중성화된 성견
-  kcalPerKg = 3600;               // 1kg당 사료 칼로리 (예: 3600 kcal/kg)
-
-  portionGrams = foodWeightPerMeal_calc(feedCount,weight,activityLevel,kcalPerKg);
-}
-
-// 현재 시간을 "HH:MM" 형식으로 반환
-String Feeder::getTimeString(DateTime now) {
+// 현재 시간을 "HH:MM" 형식으로 반환 -> 현재시간 확인 함수
+String getTimeString(DateTime now) {
   char buf[6];
   sprintf(buf, "%02d:%02d", now.hour(), now.minute());
   return String(buf);
 }
 
 // 실제 사료를 배급하는 함수
-void Feeder::feedPortion(int index) {
+void feedPortion(int index) {
   Serial.println("[" + getTimeString(rtc.now()) + "] 급식 시작");
 
   servo.write(90);         // 투입구 개방
@@ -139,13 +49,18 @@ void Feeder::feedPortion(int index) {
 }
 
 // 하루가 시작되면 급식 완료 배열을 초기화
-void Feeder::resetFeedingFlags() {
+void resetFeedingFlags() {
   for (int i = 0; i < 6; i++) {
     feedDoneToday[i] = false;
   }
   isFoodInputDone=false;
 }
 
-bool isFoodInputDoneStatus() {
+// 배급 상태 확인인
+bool isFoodInputDoneState(){
   return isFoodInputDone;
+}
+
+void loop() {
+  
 }
