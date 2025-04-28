@@ -31,6 +31,5 @@
   void feedPortion(int index);  // 사료 급여 함수(로드셀, 서보모터 동작)
   void resetFeedingFlags();     // 하루 급식 플래그 초기화
   bool isFoodInputDoneState(); // 배급 상태 확인 함수
-};
 
 #endif
