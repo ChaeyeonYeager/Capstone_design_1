@@ -28,7 +28,7 @@ void begin() {
 
     // digitalPinToInterrupt(pin) ==> 핀 번호를 인터럽트 번호로 ==> attachInterrupt()함수가 인터럽트 번호를 요구하기 때문.
     // []() {instance->pulseISR();}, RISING ==> 클래스 내부 함수 바로 못 쓰므로 instance 포인터를 통해 pulseISR() 간접 호출, RISING 신호에 pulseISR() 함수 실행
-    attachInterrupt(digitalPinToInterrupt(pin), []() {pulseISR();}, RISING);
+    //attachInterrupt(digitalPinToInterrupt(pin), []() {pulseISR();}, RISING);
     lastUpdateTime = millis(); // 흐른 시각 기록
 }
 
@@ -78,4 +78,7 @@ bool targetWater(){
     // (물 정량값 - 불리기 위해 넣은 값) 계산한 변수 받아서
     // 그 변수(targetVolume)와 totalMilliLiters 비교
     // if (targetVolume <= totalMilliLiters) {return true;} else {return false;} 
+    
+    // 일단 return true
+    return true;
 }
