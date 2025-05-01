@@ -43,11 +43,11 @@ void stopMotor() {
   analogWrite(ENA, 0);
 }
 
-// ✅ 알림 함수 (3초간 삐 소리)
+// ✅ 알림 함수 (3초간 삐 소리 - 수동 부저용)
 void alertFor3Seconds() {
-  digitalWrite(speakerPin, HIGH); // 삐 소리 시작
-  delay(3000);                    // 3초간 유지
-  digitalWrite(speakerPin, LOW);  // 소리 끄기
+  tone(speakerPin, 1000);   // 1000Hz의 소리를 핀 4번으로 출력
+  delay(3000);     // 3초 동안 울림
+  noTone(speakerPin);       // 소리 끔
 }
 
 bool isGrindingDone()
