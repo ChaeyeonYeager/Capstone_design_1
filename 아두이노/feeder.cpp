@@ -24,7 +24,7 @@ void feedPortion(int index) {
   Serial.println("[" + getTimeString(rtc.now()) + "] 급식 시작");
 
   servo.write(90);         // 투입구 개방
-  delay(3000);             // 사료 투하 시간 확보
+  delay(1000);             // 사료 투하 시간 확보 ***상의 후 시간 정하기***
 
   float target = portionGrams;
   float minAccept = target * 0.95;
@@ -55,7 +55,7 @@ void resetFeedingFlags() {
   isFoodInputDone=false;
 }
 
-// 배급 상태 확인인
+// 배급 상태 확인
 bool isFoodInputDoneState(){
   return isFoodInputDone;
 }

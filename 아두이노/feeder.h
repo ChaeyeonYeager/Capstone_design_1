@@ -1,6 +1,7 @@
 // Feeder.h - 자동 급식기 제어 클래스 헤더 파일
 #ifndef FEEDER_H
 #define FEEDER_H
+#define MAX 6
 
 #include <HX711.h>
 #include <Wire.h>
@@ -18,11 +19,11 @@
     int age;
     float weight;
     int feedCount;
-    string feedTimes[6];           // 최대 6회 급식 시간
+    string feedTimes[MAX];           // 최대 max회 급식 시간
     float activityLevel;
     int kcalPerKg;
     float portionGrams;
-    bool feedDoneToday[6];        // 각 시간별 급식 완료 여부
+    bool feedDoneToday[MAX];        // 각 시간별 급식 완료 여부
     float activityFactor;
     bool isFoodInputDone;
   
