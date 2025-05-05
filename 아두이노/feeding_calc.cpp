@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include "feeding_calc.h"
+#include "feeder.h"
 
 float RER;
 float DER;
@@ -24,4 +24,32 @@ float calculatePortionGrams(int feedingCount, String feedTimes[], float dogWeigh
   Serial.println("========================");
 
   return grams;
+}
+
+// 이동 평균 기반 정밀 무게 측정 함수
+float getSuperStableWeight() {
+  const int numReadings = 20;
+  float readings[numReadings];
+  float sum = 0;
+
+  for (int i = 0; i < numReadings; i++) {
+    readings[i] = hx711.get_units();
+    delay(30);
+  }
+
+  for (int i = 0; i < numReadings; i++) {
+    sum += readings[i];
+  }
+  float average = sum / numReadings;
+
+  float filteredSum = 0;
+  int filteredCount = 0;
+  for (int i = 0; i < numReadings; i++) {
+    if (abs(readings[i] - average) < 0.02) {
+      filteredSum += readings[i];
+      filteredCount++;
+    }
+  }
+
+  return (filteredCount > 0) ? (filteredSum / filteredCount) : average;
 }

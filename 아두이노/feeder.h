@@ -9,24 +9,29 @@
 // 최대 급식 횟수 정의
 #define MAX 6
 
+// 아두이노 핀 
+#define LOADCELL_DOUT_PIN 2
+#define LOADCELL_SCK_PIN 3
+#define SERVOPIN 9
+
 // 외부에서 사용할 하드웨어 인스턴스
 extern HX711 scale;
 extern RTC_DS3231 rtc;
 extern Servo servo;
 
 // 설정값들 (앱 또는 초기 설정)
-extern int feedCount;                     // 급여 횟수
+float calibration_factor = -28000;  // 로드셀 보정값extern int feedCount;                     // 급여 횟수
 extern String feedTimes[MAX];             // 급여 시간 (HH:MM 형식)
 extern float portionGrams;                // 1회 급여량 (g)
 extern bool feedDoneToday[MAX];           // 해당 시간 급여 완료 여부
 extern bool isFoodInputDone;              // 급식 전체 완료 여부
 
 // 함수 선언
+void setupFeeder();                              // 초기화 함수수
 void runFeedingSchedule();                // 시간 확인 후 급식 수행
 void executeFeeding(int index);           // 실제 급식 수행
 void resetDailyFeeding();                 // 하루 시작 시 플래그 초기화
 bool isFeedingDone();                     // 급식 완료 여부 반환
-String getTimeString(DateTime now);       // 시간 → 문자열 변환
 
 #endif
 

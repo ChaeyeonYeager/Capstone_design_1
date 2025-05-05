@@ -1,4 +1,18 @@
 #include <feeder.h>
+#include <feeding_calc.h>
+
+// ✅ feeder 파일 set up 함수
+void setupFeeder(){
+  Serial.begin(115200);
+  hx711.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
+  hx711.set_scale(calibration_factor);
+  hx711.tare();  // 초기 영점(0) 설정
+
+  myServo.attach(SERVOPIN);
+  myServo.write(0);  // 서보 닫기
+  
+  randomSeed(analogRead(0));  // 매번 다른 랜덤값 생성
+}
 
 // ✅ 급식 시간에 도달하면 사료 급여 실행
 void runFeedingSchedule() {
@@ -12,19 +26,15 @@ void runFeedingSchedule() {
   }
 }
 
-// ✅ DateTime 객체를 "HH:MM" 형식 문자열로 변환
-String getTimeString(DateTime now) {
-  char buf[6];
-  sprintf(buf, "%02d:%02d", now.hour(), now.minute());
-  return String(buf);
-}
 
 // ✅ 사료를 실제로 투입하는 함수 (서보 + 로드셀)
 void executeFeeding(int index) {
-  Serial.println("[" + getTimeString(rtc.now()) + "] 급식 시작");
+  Serial.println("[" + getTimeString(rtc.now()) + "] 급식 시작"); // 현재 시각 로그 출력(디버깅용용)
+
+ portionGrams=calculatePortionGrams(); // !!!랜덤값 집어넣기!!!
 
   servo.write(90);         // 투입구 열기
-  delay(1000);             // 사료 투하 대기 (1초)
+  delay(500);             // 사료 투하 대기 (0.5초)
 
   float target = portionGrams;        // 목표 사료량
   float minAccept = target * 0.95;    // 허용 하한 (95%)
@@ -32,9 +42,17 @@ void executeFeeding(int index) {
   float weight = 0;
 
   // ✅ 로드셀 무게가 목표 범위 안에 들어올 때까지 대기
+  int timeout = 0;
   while (true) {
-    weight = scale.get_units();
+    weight = getSuperStableWeight(); // 로드셀로 현재 그릇+사료 무게 측정정
     if (weight >= minAccept && weight <= maxAccept) {
+      break;
+    }
+
+    // 목표 무게에 너무 오래 도달하지 못하면 안전 탈출
+    timeout++;
+    if (timeout > 50) { // 예: 약 1.5초 후 강제 종료
+      Serial.println("⚠️ 무게 측정 타임아웃. 급식 종료");
       break;
     }
   }
@@ -48,7 +66,7 @@ void executeFeeding(int index) {
 
 // ✅ 하루 시작 시 모든 급식 완료 플래그 초기화
 void resetDailyFeeding() {
-  for (int i = 0; i < 6; i++) {
+  for (int i = 0; i < MAX; i++) {
     feedDoneToday[i] = false;
   }
   isFoodInputDone = false;
