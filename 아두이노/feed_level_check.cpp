@@ -22,7 +22,6 @@ void initFeedingSystem() {
   pinMode(TRIG1, OUTPUT); pinMode(ECHO1, INPUT);
   pinMode(TRIG2, OUTPUT); pinMode(ECHO2, INPUT);
   pinMode(LED_PIN, OUTPUT);
-  Serial.begin(9600);
 }
 
 float measureDistance(int trig, int echo, const char* label) {
