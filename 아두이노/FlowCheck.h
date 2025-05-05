@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 
-void initFlowSensor();      // 매개변수 없는 초기화
+void initFlowSensor();     
 void pulseISR();
 void flowUpdate();
 float getFlowRate();
