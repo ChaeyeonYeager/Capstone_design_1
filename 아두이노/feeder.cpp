@@ -32,7 +32,7 @@ void runFeedingSchedule() {
 void executeFeeding(int index) {
   Serial.println("[" + getTimeString(rtc.now()) + "] 급식 시작"); // 현재 시각 로그 출력(디버깅용용)
 
- portionGrams=calculatePortionGrams(); // !!!랜덤값 집어넣기!!!
+ // portionGrams=calculatePortionGrams(); // !!!랜덤값 집어넣기!!!  (전역변수로 portionGrams에 이미 랜덤값으로 계산된 사료량이 들어가있으요!)
 
   servo.write(90);         // 투입구 열기
   delay(500);             // 사료 투하 대기 (0.5초)
