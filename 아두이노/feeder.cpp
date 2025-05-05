@@ -2,7 +2,8 @@
 #include <feeding_calc.h>
 
 // ✅ feeder 파일 set up 함수
-void setupFeeder(){
+// 로드셀, 서보모터 초기화화
+void initFeeder(){
   Serial.begin(115200);
   hx711.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
   hx711.set_scale(calibration_factor);
@@ -10,7 +11,7 @@ void setupFeeder(){
 
   myServo.attach(SERVOPIN);
   myServo.write(0);  // 서보 닫기
-  
+
   randomSeed(analogRead(0));  // 매번 다른 랜덤값 생성
 }
 

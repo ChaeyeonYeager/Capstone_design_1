@@ -27,7 +27,7 @@ extern bool feedDoneToday[MAX];           // 해당 시간 급여 완료 여부
 extern bool isFoodInputDone;              // 급식 전체 완료 여부
 
 // 함수 선언
-void setupFeeder();                              // 초기화 함수수
+void initFeeder();                              // 초기화 함수수
 void runFeedingSchedule();                // 시간 확인 후 급식 수행
 void executeFeeding(int index);           // 실제 급식 수행
 void resetDailyFeeding();                 // 하루 시작 시 플래그 초기화
