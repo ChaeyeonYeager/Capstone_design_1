@@ -49,6 +49,13 @@ void resetDailyFeeding() {
   isFoodInputDone = false;
 }
 
+
+
 bool isFeedingDone() {
   return isFoodInputDone;
 }
+
+
+// void loop() {
+//   runFeedingSchedule(); // 자동 급식 실행 (시간 조건에 맞춰 내부에서 판단)
+// }
