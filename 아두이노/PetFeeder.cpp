@@ -42,6 +42,7 @@ void PetFeeder::calculatePortion() {
 
 // 서보모터 + 로드셀 기반 사료 투입
 void PetFeeder::feedFood() {
+  initFeeder();
   runFeedingSchedule();
   if (isFeedingDone()) feedingDone = true;
 }
