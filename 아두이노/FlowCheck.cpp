@@ -55,3 +55,28 @@ void resetVolume() {
 bool targetWater() {
     return true;
 }
+
+
+// 메인함수에서는
+// #include <Arduino.h>
+// #include "FlowCheck.h"
+// #include "Pump.h"
+
+// void setup() {
+//   Serial.begin(9600);
+//   initFlowSensor();   
+//   setupPump();
+// }
+
+// void loop() {
+//   pumpUpdate();
+
+//   Serial.print("유량: ");
+//   Serial.print(getFlowRate());
+//   Serial.print(" mL/s\t누적: ");
+//   Serial.print(getTotalVolume());
+//   Serial.println(" mL");
+
+//   delay(500);
+// }
+//  이렇게 호출
