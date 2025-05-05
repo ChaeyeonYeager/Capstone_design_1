@@ -1,8 +1,8 @@
 #include <Arduino.h>
 #include "FlowCheck.h"
 
-#define FLOW_SENSOR_PIN 2         // 핀 고정
-#define PULSES_PER_LITER 450.0    // 펄스 수 고정
+#define FLOW_SENSOR_PIN 2         // 핀
+#define PULSES_PER_LITER 450.0    // 펄스 수
 
 volatile uint32_t pulseCount;
 unsigned long lastUpdateTime;
