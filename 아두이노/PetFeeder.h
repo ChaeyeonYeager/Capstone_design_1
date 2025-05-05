@@ -32,7 +32,7 @@ public:
 
   // 급식 루틴 실행 (시간 도달 시 호출됨)
   void runFeedingRoutine();
-
+  void checkFoodLevelAfterGrindDelay();  // ✅ 30분 후 사료 잔량 체크
   // 상태 반환
   bool isFeedingComplete() const;
   bool isSoakingComplete() const;
@@ -63,6 +63,10 @@ private:
   bool feedingDone;
   bool soakingDone;
   bool grindingDone;
+
+
+  unsigned long grindingDoneTime;   // ✅ 분쇄 완료 시각
+  bool foodLevelChecked;            // ✅ 잔량 체크 완료 여부
 
   // 내부 동작 함수
   void calculatePortion();        // 사료량 계산
