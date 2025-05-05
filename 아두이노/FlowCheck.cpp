@@ -1,5 +1,5 @@
 #include <Arduino.h>
-
+#include "FlowCheck.h"
 // :: -> FlowCheck.h에 있는 함수
 
 uint8_t pin; // 연결 된 핀 번호 
