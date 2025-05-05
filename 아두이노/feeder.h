@@ -1,37 +1,36 @@
-// Feeder.h - 자동 급식기 제어 클래스 헤더 파일
 #ifndef FEEDER_H
 #define FEEDER_H
-#define MAX 6
 
 #include <HX711.h>
 #include <Wire.h>
 #include "RTClib.h"
 #include <Servo.h>
-#include <SoftwareSerial.h>
 
-  HX711 scale;
-  RTC_DS3231 rtc;
-  Servo servo;
-  SoftwareSerial BT;
+// 최대 급식 횟수 정의
+#define MAX 6
 
-    // 애플리케이션에서 전달받을 설정값들
-    string petName;
-    int age;
-    float weight;
-    int feedCount;
-    string feedTimes[MAX];           // 최대 max회 급식 시간
-    float activityLevel;
-    int kcalPerKg;
-    float portionGrams;
-    bool feedDoneToday[MAX];        // 각 시간별 급식 완료 여부
-    float activityFactor;
-    bool isFoodInputDone;
-  
-// === 함수 선언 ===
-void runFeedingSchedule();             // 급식 시간 체크 후 자동 급식
-void executeFeeding(int index);        // 실제 급식 수행 (서보 + 로드셀)
-void resetDailyFeeding();              // 하루 시작 시 플래그 초기화
-bool isFeedingDone();                  // 급식 완료 여부 반환
-String getTimeString(DateTime now);    // "HH:MM" 형식 시간 반환
+// 외부에서 사용할 하드웨어 인스턴스
+extern HX711 scale;
+extern RTC_DS3231 rtc;
+extern Servo servo;
+
+// 설정값들 (앱 또는 초기 설정)
+extern int feedCount;                     // 급여 횟수
+extern String feedTimes[MAX];             // 급여 시간 (HH:MM 형식)
+extern float portionGrams;                // 1회 급여량 (g)
+extern bool feedDoneToday[MAX];           // 해당 시간 급여 완료 여부
+extern bool isFoodInputDone;              // 급식 전체 완료 여부
+
+// 함수 선언
+void runFeedingSchedule();                // 시간 확인 후 급식 수행
+void executeFeeding(int index);           // 실제 급식 수행
+void resetDailyFeeding();                 // 하루 시작 시 플래그 초기화
+bool isFeedingDone();                     // 급식 완료 여부 반환
+String getTimeString(DateTime now);       // 시간 → 문자열 변환
 
 #endif
+
+
+// - 급식 스케줄러 함수 runFeedingSchedule() 구현
+// - 로드셀 기반 사료 투입 로직 정비 (95~105% 허용)
+// - 하루 초기화 함수 resetDailyFeeding() 정리
