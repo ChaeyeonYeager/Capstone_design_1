@@ -83,8 +83,27 @@ void PetFeeder::addExtraWater() {
 void PetFeeder::grindFood() {
   initmotorGrinder();
   motorGrinder();
-  if (isGrindingDone()) grindingDone = true;
+  if (isGrindingDone()) {
+    grindingDone = true;
+    grindingDoneTime = millis();    // ✅ 분쇄 완료 시각 저장
+    foodLevelChecked = false;
+  }
 }
+
+
+void PetFeeder::checkFoodLevelAfterGrindDelay() {
+  if (!grindingDone || foodLevelChecked) return;
+
+  unsigned long currentTime = millis();
+  if (currentTime - grindingDoneTime >= 1800000) { // 30분
+    Serial.println("⏱️ 분쇄 후 30분 경과 → 잔량 측정");
+
+    initFeedingSystem();  // ✅ 센서 핀 초기화 
+    checkFoodLevel();     // 사료 잔량 측정
+    foodLevelChecked = true;
+  }
+}
+
 
 // 급식 정보 반환 함수들
 int PetFeeder::getFeedCount() const {
