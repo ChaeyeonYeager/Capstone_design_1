@@ -27,10 +27,11 @@
     float activityFactor;
     bool isFoodInputDone;
   
-  void checkAndFeed();  // 자동 급식 처리 함수
-  String getTimeString(DateTime now); // "HH:MM" 시간 형식 반환
-  void feedPortion(int index);  // 사료 급여 함수(로드셀, 서보모터 동작)
-  void resetFeedingFlags();     // 하루 급식 플래그 초기화
-  bool isFoodInputDoneState(); // 배급 상태 확인 함수
+// === 함수 선언 ===
+void runFeedingSchedule();             // 급식 시간 체크 후 자동 급식
+void executeFeeding(int index);        // 실제 급식 수행 (서보 + 로드셀)
+void resetDailyFeeding();              // 하루 시작 시 플래그 초기화
+bool isFeedingDone();                  // 급식 완료 여부 반환
+String getTimeString(DateTime now);    // "HH:MM" 형식 시간 반환
 
 #endif
