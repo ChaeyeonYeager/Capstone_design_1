@@ -1,44 +1,34 @@
 #include <Arduino.h>
-#include "FlowCheck.h"
+#include "FlowCheck.h"  // 유량 측정 관련 함수
 #include "Pump.h"
 
-#define RELAY_PIN 8
+#define RELAY_PIN 8      // 릴레이 제어 핀 (펌프 연결)
 
-bool pumpState;
+bool pumpState;          // 펌프 작동 상태 플래그
 
+// ✅ 펌프 초기화 함수
 void initPump() {
-  pinMode(RELAY_PIN, OUTPUT);
-  digitalWrite(RELAY_PIN, HIGH);  // 펌프 ON
+  pinMode(RELAY_PIN, OUTPUT);      // 릴레이 핀 출력 모드로 설정
+  digitalWrite(RELAY_PIN, HIGH);   // 펌프 ON (릴레이 HIGH)
   pumpState = true;
 
-  initFlowSensor();               // 유량 센서 초기화 (핀/펄스 고정)
+  initFlowSensor();                // 유량 센서 초기화 (인터럽트 포함)
 }
 
+// ✅ 주기적으로 호출되어 유량 체크 및 펌프 OFF 조건 판단
 void pumpUpdate() {
-  flowUpdate();                   // 유량 갱신
+  flowUpdate();                    // 1초마다 유량 측정 갱신
 
+  // 목표 유량에 도달하면 펌프 OFF
   if (pumpState && targetWater()) {
-    digitalWrite(RELAY_PIN, LOW); // 펌프 OFF
+    digitalWrite(RELAY_PIN, LOW);  // 릴레이 OFF → 펌프 OFF
     pumpState = false;
   }
 
-  delay(100);
+  delay(100);  // 너무 자주 체크하지 않도록 딜레이
 }
 
+// ✅ 펌프가 현재 작동 중인지 여부 반환
 bool isPumpOn() {
   return pumpState;
 }
-
-
-//메인에서
-// #include <Arduino.h>
-// #include "Pump.h"
-
-// void setup() {
-//   Serial.begin(9600);
-//   initPump();  // 함수 명 통일됨
-// }
-
-// void loop() {
-//   pumpUpdate();
-// }
