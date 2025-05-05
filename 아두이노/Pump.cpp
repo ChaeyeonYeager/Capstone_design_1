@@ -1,6 +1,6 @@
 #include <Arduino.h>
-#include "FlowCheck.cpp"
-
+#include "FlowCheck.h"
+#include "Pump.h"
 #define RELAY_PIN 8
 
 bool pumpState;
