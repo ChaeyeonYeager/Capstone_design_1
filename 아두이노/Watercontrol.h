@@ -1,21 +1,15 @@
-#ifndef WATER_CONTROL_H
-#define WATER_CONTROL_H
+#ifndef WATERCONTROL_H
+#define WATERCONTROL_H
 
 #include <Arduino.h>
 
-// 핀 설정
 const int pumpPin = 8;
-const int flowSensorPin = 6;
+const int flowSensorPin = 2;
+const int targetPulseCount = 45; // 예: 100mL 기준
 
-// 100ml 기준으로 측정된 펄스 수 (CheckFlowPulse에서 얻은 값)
-const int targetPulseCount = 300; // 예: 100ml 기준 펄스 수
-extern volatile int flowPulseCount;
-
-// 함수 선언
-void initWaterSystem();
-void startWaterInjection();
-void waitForSoaking();
-void countFlowPulse();
-bool isSoakingDone();
+void initWaterSystem();      // 시스템 초기화
+void runWaterProcess();      // 물 주입 + 불림 통합 처리
+bool isSoakingDone();        // 불림 완료 여부
+void countFlowPulse();       // 인터럽트용 함수
 
 #endif
