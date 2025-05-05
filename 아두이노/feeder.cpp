@@ -4,7 +4,6 @@
 // ✅ feeder 파일 set up 함수
 // 로드셀, 서보모터 초기화화
 void initFeeder(){
-  Serial.begin(115200);
   hx711.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
   hx711.set_scale(calibration_factor);
   hx711.tare();  // 초기 영점(0) 설정
