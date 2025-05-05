@@ -1,4 +1,3 @@
-// feed_level_check.cpp
 #include "feed_level_check.h"
 #include <Arduino.h>
 
@@ -12,11 +11,6 @@ const float SIMULATED_EMPTY = 40.0;
 const float SIMULATED_FULL = 10.0;
 const float DISTANCE_MIN = 2.0;
 const float DISTANCE_MAX = 400.0;
-const unsigned long CHECK_DELAY = 1800000;  // 30 minutes
-
-unsigned long feedingStartTime = 0;
-bool measuring_started = false;
-bool feeding_done = false;
 
 void initFeedingSystem() {
   pinMode(TRIG1, OUTPUT); pinMode(ECHO1, INPUT);
@@ -85,27 +79,3 @@ void checkFoodLevel() {
 
   digitalWrite(LED_PIN, (percent <= 20.0) ? HIGH : LOW);
 }
-
-void handleFeedingLogic() {
-  if (feeding_done && !measuring_started) {
-    feedingStartTime = millis();
-    measuring_started = true;
-    Serial.println("✅ 배식 완료됨 → 30분 후 체크 예정");
-  }
-
-  if (measuring_started && millis() - feedingStartTime >= CHECK_DELAY) {
-    Serial.println("⏱️ 30분 건강 → 사료 잔량 체크 중...");
-    checkFoodLevel();
-    feeding_done = false;
-    measuring_started = false;
-  }
-}
-
-
-// void setup() {
-//   initFeedingSystem();  // 센서 설정 및 Serial 초기화
-// }
-
-// void loop() {
-//   handleFeedingLogic();  // feeding_done 값 변경 여부에 따라 자동으로 잔량 측정
-// }
