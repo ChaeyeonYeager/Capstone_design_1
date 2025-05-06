@@ -25,7 +25,9 @@ void initFlowSensor() {
     lastUpdateTime = 0;
     flowRate = 0;
     totalMilliLiters = 0;
+}
 
+void beginFlowSensor() {
     pinMode(FLOW_SENSOR_PIN, INPUT_PULLUP);  // 풀업 입력으로 핀 설정
     attachInterrupt(digitalPinToInterrupt(FLOW_SENSOR_PIN), pulseISR, RISING);  // 상승엣지에서 인터럽트 발생
     lastUpdateTime = millis();  // 초기 시간 저장
@@ -66,6 +68,14 @@ float getTotalVolume() {
 // ✅ 유량 초기화 함수 (다음 주입을 위해)
 void resetVolume() {
     totalMilliLiters = 0;
+}
+
+bool targetWater() {
+    return true;
+    // if(totalMilliLiters >= targetVolume){
+    // return true;
+    // }
+
 }
 
 // ✅ 목표 유량 도달 여부 확인 함수
