@@ -12,7 +12,8 @@ void initPump() {
   digitalWrite(RELAY_PIN, HIGH);   // 펌프 ON (릴레이 HIGH)
   pumpState = true;
 
-  initFlowSensor();                // 유량 센서 초기화 (인터럽트 포함)
+  initFlowSensor(2, 450);  // 핀 번호, 펄스/리터
+  beginFlowSensor();
 }
 
 // ✅ 주기적으로 호출되어 유량 체크 및 펌프 OFF 조건 판단
