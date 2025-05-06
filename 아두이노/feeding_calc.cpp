@@ -1,9 +1,5 @@
 #include <Arduino.h>
-#include "feeder.h"
-
-float RER;
-float DER;
-float portionGrams;
+#include <feeding_calc.h>
 
 float calculatePortionGrams(int feedingCount, String feedTimes[], float dogWeight, float activeLvl, float calPerKg) {
   RER = 70 * pow(dogWeight, 0.75);               // 기초 에너지
@@ -33,7 +29,7 @@ float getSuperStableWeight() {
   float sum = 0;
 
   for (int i = 0; i < numReadings; i++) {
-    readings[i] = hx711.get_units();
+    readings[i] = hx711_calc.get_units();
     delay(30);
   }
 
