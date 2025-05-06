@@ -1,4 +1,3 @@
-#include <Arduino.h>
 #include <../feeding_calc.h>
 
 // ✅ 함수 선언

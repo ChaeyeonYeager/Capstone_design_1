@@ -26,7 +26,7 @@ void feedPortion(int index) {
   servo.write(90);         // 투입구 개방
   delay(1000);             // 사료 투하 시간 확보 ***상의 후 시간 정하기***
 
-  float target = portionGrams;
+  float target = foodWeightPerMeal;
   float minAccept = target * 0.95;
   float maxAccept = target * 1.05;
 

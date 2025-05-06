@@ -8,6 +8,7 @@
 #include "RTClib.h"
 #include <Servo.h>
 #include <SoftwareSerial.h>
+#include <../feeding_calc.h>
 
   HX711 scale;
   RTC_DS3231 rtc;
@@ -22,7 +23,7 @@
     string feedTimes[MAX];           // 최대 max회 급식 시간
     float activityLevel;
     int kcalPerKg;
-    float portionGrams;
+    //float portionGrams; // 1회 급식량 == foddWeightPerMeal
     bool feedDoneToday[MAX];        // 각 시간별 급식 완료 여부
     float activityFactor;
     bool isFoodInputDone;

@@ -17,6 +17,7 @@ bool opened = false;                // 서보모터 열린 상태 여부
 
 void setup() {
   Serial.begin(115200);
+  
   hx711.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
   hx711.set_scale(calibration_factor);
   hx711.tare();  // 초기 영점(0) 설정
@@ -24,6 +25,8 @@ void setup() {
   myServo.attach(SERVOPIN);
   myServo.write(0);  // 서보 닫기
 
+  goal_weight = foodWeightPerMeal_calc(3, 7, 2, 3600);
+  
   Serial.println("사료통을 올려주세요!");
 }
 
