@@ -1,41 +1,55 @@
-#include <../feeding_calc.h>
+#include <Arduino.h>
+#include "feeder.h"
 
-// ✅ 함수 선언
-int foodWeightPerMeal_calc(int feedingCount,string feedTimes[], float dogWeight, float activeLvl, float calPerKg); // 사료량 계산 함수
+float RER;
+float DER;
+float portionGrams;
 
-void setup() {
-  Serial.begin(9600);
+float calculatePortionGrams(int feedingCount, String feedTimes[], float dogWeight, float activeLvl, float calPerKg) {
+  RER = 70 * pow(dogWeight, 0.75);               // 기초 에너지
+  DER = RER * activeLvl;                         // 활동 반영 하루 에너지
 
-  foodWeightPerMeal = foodWeightPerMeal_calc(feedCount,feedTimes, weight, activityLevel, kcalPerKg);
+  float grams = ((DER / calPerKg) * 1000.0) / feedingCount;
+  portionGrams = grams;                          // 전역 변수에 저장
+
+  // 디버깅 출력
+  Serial.println("========================");
+  Serial.println("🔬 급식량 계산 결과");
+  Serial.print("체중: "); Serial.print(dogWeight); Serial.println(" kg");
+  Serial.print("활동지수: "); Serial.println(activeLvl);
+  Serial.print("급여 횟수: "); Serial.println(feedingCount);
+  Serial.print("RER: "); Serial.print(RER); Serial.println(" kcal");
+  Serial.print("DER: "); Serial.print(DER); Serial.println(" kcal");
+  Serial.print("1회 사료량: "); Serial.print(grams); Serial.println(" g");
+  Serial.println("========================");
+
+  return grams;
 }
 
-float foodWeightPerMeal_calc(int feedingCount, string feedTimes[], float dogWeight, float activeLvl, float calPerKg) {
-  // ✅ RER 계산: 70 * (체중^0.75)
-  RER = 70 * pow(dogWeight, 0.75);
+// 이동 평균 기반 정밀 무게 측정 함수
+float getSuperStableWeight() {
+  const int numReadings = 20;
+  float readings[numReadings];
+  float sum = 0;
 
-  // ✅ DER 계산: RER * 활동지수
-  DER = RER * activeLvl;
+  for (int i = 0; i < numReadings; i++) {
+    readings[i] = hx711.get_units();
+    delay(30);
+  }
 
-  // ✅ DER을 1회 급여량으로 변환: ((DER / calPerKg) * 1000) / 급여횟수
-  float foodWeightPerMeal = ((DER / calPerKg) * 1000.0) / feedingCount;
+  for (int i = 0; i < numReadings; i++) {
+    sum += readings[i];
+  }
+  float average = sum / numReadings;
 
-      // 📤 결과 출력
-      Serial.println("========================");
-      Serial.println("🔬 급식량 계산 테스트");
-      Serial.print("체중: "); Serial.print(dogWeight); Serial.println(" kg");
-      Serial.print("활동지수: "); Serial.println(activeLvl);
-      Serial.print("급여 횟수: "); Serial.println(feedingCount);
-      Serial.print("RER (기초 에너지): "); Serial.print(RER); Serial.println(" kcal");
-      Serial.print("DER (하루 필요 에너지): "); Serial.print(DER); Serial.println(" kcal");
-      Serial.print("1회 사료량: "); Serial.print(foodWeightPerMeal); Serial.println(" g");
-      Serial.println("========================");
+  float filteredSum = 0;
+  int filteredCount = 0;
+  for (int i = 0; i < numReadings; i++) {
+    if (abs(readings[i] - average) < 0.02) {
+      filteredSum += readings[i];
+      filteredCount++;
+    }
+  }
 
-  // ✅ 1회 급여량 계산: ((DER / calPerKg) * 1000) / 급여횟수
-  portionGrams=foodWeightPerMeal; 
-  return foodWeightPerMeal;
-
-}
-
-void loop() {
-  
+  return (filteredCount > 0) ? (filteredSum / filteredCount) : average;
 }
