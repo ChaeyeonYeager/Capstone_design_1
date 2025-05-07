@@ -1,18 +1,30 @@
 #include <Arduino.h>
-const int relayPin = 7;  // S 핀을 아두이노 D7에 연결
+
+// L298N 모터 드라이버 핀 연결
+const int IN1 = 8;
+const int IN2 = 9;
+const int ENA = 10;  // PWM 가능 핀
 
 void setup() {
-  pinMode(relayPin, OUTPUT);
+  pinMode(IN1, OUTPUT);
+  pinMode(IN2, OUTPUT);
+  pinMode(ENA, OUTPUT);
+
   Serial.begin(9600);
-  Serial.println("워터펌프 릴레이 제어 시작");
+  Serial.println("워터펌프 모터 드라이버 제어 시작");
 }
 
 void loop() {
+  // 펌프 ON
   Serial.println("펌프 ON");
-  digitalWrite(relayPin, LOW);  // 릴레이 ON (보통 LOW에서 작동)
-  delay(5000);  // 5초 동안 펌프 작동
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+  analogWrite(ENA, 200);  // 속도 200 (0~255)
 
+  delay(5000);  // 5초간 작동
+
+  // 펌프 OFF
   Serial.println("펌프 OFF");
-  digitalWrite(relayPin, HIGH);  // 릴레이 OFF
-  delay(5000);  // 5초 정지
+  analogWrite(ENA, 0);  // 전압 0 → 정지
+  delay(5000);  // 5초간 정지
 }
