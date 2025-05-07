@@ -10,7 +10,7 @@
 
 
 // 핀 설정
-const int pumpPin = 8;          // DC 펌프 제어 핀
+const int pumpPin = 7;          // DC 펌프 제어 핀(릴레리 모듈 S->D7)
 const int flowSensorPin = 6;    // 유량 센서 핀
 volatile int flowPulseCount = 0;  // 유량 센서 펄스 카운트
 
