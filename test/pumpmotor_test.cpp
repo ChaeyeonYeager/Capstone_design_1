@@ -1,12 +1,7 @@
 #include <Arduino.h>
 
 // 프라이밍(워터펌프내에 물을 주입) 하기 위해서 작동해야 하는 코드
-
-// L298N 모터 드라이버를 사용하여 DC 모터 제어
-// 펌프 ON/OFF 및 속도 조절을 위한 코드입니다.
-// ENA 핀을 통해 모터의 속도를 PWM으로 조절합니다.
-// 펌프는 5초간 작동 후 5초간 정지합니다.
-// 이 과정을 반복합니다.
+// 기본적으로 모터 드라이버를 통해서 워터펌프를 동작시키기 위한 코드
 
 
 // L298N 모터 드라이버 핀 연결
@@ -28,7 +23,7 @@ void loop() {
   Serial.println("펌프 ON");
   digitalWrite(IN1, HIGH);
   digitalWrite(IN2, LOW);
-  analogWrite(ENA, 200);  // 속도 200 (0~255)
+  analogWrite(ENA, 191);  // PWM 191 ≒ 9V
 
   delay(5000);  // 5초간 작동
 

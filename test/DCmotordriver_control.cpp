@@ -1,11 +1,17 @@
 #include <Arduino.h>
 
-// 펌프는 100mL를 주입하는 것을 목표로 합니다.
-// 고정된 펄스(98회)를 기준으로 하여 유량 센서의 펄스를 카운트합니다.
-// 펌프가 작동하면 유량 센서에서 펄스가 발생합니다.
-// 이 펄스는 인터럽트로 카운트됩니다.
-// 펌프가 작동하는 동안 유량 센서의 펄스 수를 체크하여 목표 펄스 수에 도달하면 펌프를 정지합니다.
-// 펌프는 5초간 정지 후 다시 작동할 수 있도록 대기합니다.
+/*
+  워터펌프는 100mL의 물을 주입하는 것이 목표입니다.
+  유량 센서는 100mL 기준으로 약 98펄스를 발생시키며, 이 값을 목표 펄스로 설정합니다.
+
+  모터는 L298N 드라이버를 통해 제어되며,
+  ENA 핀에 PWM 신호를 주어 전압을 조절합니다.
+  (PWM 191 ≒ 9V, PWM 255 ≒ 12V 기준)
+
+  펌프는 5초간 동작하고, 이후 5초간 정지합니다.
+  펌프가 동작 중일 때 유량 센서의 펄스를 카운트하고,
+  누적 펄스 수가 목표(98)에 도달하면 펌프를 정지시킵니다.
+*/
 
 // 펌프 제어 핀
 const int IN1 = 8;
@@ -27,7 +33,8 @@ void setup() {
   pinMode(ENA, OUTPUT);
   pinMode(flowSensorPin, INPUT_PULLUP);
 
-  // 인터럽트 등록
+  // 유량센서 인터럽트 설정(LOW,CHANGE대신에 RISING을 사용하는 이유는 유량이 지나가면서 H->L->H로 바뀌는 RISING에만 인터럽트
+  // 처리하여 노이즈를 줄이기 위함.)
   attachInterrupt(digitalPinToInterrupt(flowSensorPin), countPulse, RISING);
 
   // 시리얼 시작
@@ -41,7 +48,7 @@ void loop() {
     pulseCount = 0;
     pumpRunning = true;
 
-    // 펌프 ON
+    // 모터드라이버가 정방향 전류로 흘려주며 워터펌프를 9V로 동작시킴
     digitalWrite(IN1, HIGH);
     digitalWrite(IN2, LOW);
     analogWrite(ENA, 191); // 9V 수준
@@ -51,9 +58,9 @@ void loop() {
   // 실시간 펄스 체크
   if (pumpRunning && pulseCount >= targetPulse) {
     // 펌프 OFF
-    analogWrite(ENA, 0);
-    digitalWrite(IN1, LOW);
-    digitalWrite(IN2, LOW);
+    analogWrite(ENA, 0);    // 전압 0 → 정지
+    digitalWrite(IN1, LOW); 
+    digitalWrite(IN2, LOW); 
     pumpRunning = false;
 
     Serial.println("[펌프 OFF] 목표 100mL 도달!");
