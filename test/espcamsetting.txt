@@ -1,0 +1,101 @@
+1. 개발 환경 준비
+1-1. VS Code + PlatformIO 설치
+VS Code 설치 (https://code.visualstudio.com/)
+
+VS Code 실행 → Extensions(확장) → “PlatformIO IDE” 검색 → 설치
+
+VS Code 재시작
+
+1-2. Python 설치
+Python 3.8 이상 (https://www.python.org/downloads/)
+
+설치 시 “Add to PATH” 옵션 체크
+
+2. PlatformIO 프로젝트 생성 (ESP32-CAM)
+VS Code 왼쪽 하단 ⟶ PlatformIO 홈(아이콘) 클릭
+
+“New Project” 선택
+
+Project Name: liquid_feed_test (원하는 이름)
+
+Board: “AI-Thinker ESP32-CAM” 선택
+
+Framework: Arduino
+
+Location: 원하는 워크스페이스 폴더
+
+“Finish” 클릭 → 새 프로젝트가 생성됨
+
+2-1. platformio.ini 설정
+ini
+복사
+편집
+[env:esp32cam]
+platform    = espressif32
+board       = esp32cam
+framework   = arduino
+
+; (선택) 필요 라이브러리 추가
+; lib_deps =
+;   bblanchon/ArduinoJson@^6.18.5
+2-2. 소스 파일 추가
+src/ 폴더 안에 test_liquid_feed_esp32.cpp 파일 생성
+
+앞서 제공한 그레이스케일 테스트 코드를 붙여넣기
+
+헤더 파일 필요 없음. 한 파일짜리 테스트 스케치입니다.
+
+2-3. 빌드 & 업로드
+보드에 USB-TTL 어댑터 연결 (IO0→GND로 부트 모드 진입)
+
+VS Code 하단의 env 드롭다운에서 esp32cam 선택
+
+▶︎ Build(번개) 클릭 → 컴파일 후 에러 없는지 확인
+
+▶︎ Upload(→) 클릭 → 업로드 완료되면 IO0-GND 분리하고 리셋
+
+3. Python(OpenCV+Flask) 서버 준비
+3-1. 가상환경 생성 (옵션)
+bash
+복사
+편집
+cd ~/your_server_folder
+python -m venv venv
+# Windows
+venv\Scripts\activate
+# macOS/Linux
+source venv/bin/activate
+3-2. 의존성 설치
+bash
+복사
+편집
+pip install flask opencv-python-headless numpy
+(※ opencv-python-headless는 GUI 없이 분석만 할 때 경량)
+
+3-3. 서버 코드 작성
+같은 폴더에 server.py 파일 생성
+
+앞서 제공한 Flask + OpenCV 분석 코드를 붙여넣기
+
+포트·엔드포인트(예: /analyze)가 initLiquidFeedDetection()에서 사용한 URL과 일치하는지 확인
+
+3-4. 서버 실행
+bash
+복사
+편집
+export FLASK_APP=server.py    # Windows: set FLASK_APP=server.py
+flask run --host=0.0.0.0 --port=5000
+http://<PC_IP>:5000/analyze 경로로 JPEG POST 요청을 받아 분석 결과(JSON)를 반환
+
+4. ESP32 ↔ 서버 통합 테스트
+ESP32-CAM: test_liquid_feed_esp32.cpp 스케치가 10초마다 시리얼로 “Remaining liquid ratio” 를 출력
+
+서버: Flask가 이미지 POST 받고 remain_ratio JSON 응답
+
+통합 코드 (LiquidFeedDetection) → 위 가이드 대로 initLiquidFeedDetection() 호출 후 detectLiquidFeedRatio() 로 JSON 받기
+
+최종 흐름:
+
+PlatformIO에서 ESP32-CAM env로 업로드 → 카메라가 서버에 이미지 전송
+
+Flask 서버 터미널에 분석 로그, ESP32 시리얼 모니터에 분석 결과가 차례로 표시
