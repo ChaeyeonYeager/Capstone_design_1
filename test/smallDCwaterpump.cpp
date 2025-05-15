@@ -9,9 +9,9 @@ void setup() {
 void loop() {
   Serial.println("펌프 on");
   digitalWrite(relayPin,HIGH);  //릴레이 on -> 펌프 on
-  delay(5000);  //5초 동안 펌프 on
+  delay(10000);  //10초 동안 펌프 on
 
   Serial.println("펌프 off");
   digitalWrite(relayPin,LOW); //릴레이 off -> 펌프 off
-  delay(5000);  //5초 동안 펌프 off
+  delay(3000);  //3초 동안 펌프 off
 }
