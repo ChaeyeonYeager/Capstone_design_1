@@ -2,10 +2,10 @@
 #define WATER_CONTROL_H
 
 // 펌프 및 유량 센서 관련 핀 설정
-const int pumpPin = 7;             // 펌프 제어용 릴레이 핀
+const int pumpPin = 10;             // 펌프 제어용 릴레이 핀
 const int flowSensorPin = 3;       // 유량 센서 신호 핀
-
-const int targetPulseCount = 45;   // 목표 펄스 수 (100mL 기준)
+const int 
+const int targetPulseCount = 98;   // 목표 펄스 수 (100mL 기준)
 
 // 초기화 및 동작 함수
 void initWaterSystem();            // 핀 모드 및 인터럽트 초기화
