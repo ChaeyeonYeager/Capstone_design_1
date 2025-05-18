@@ -103,11 +103,15 @@ void PetFeeder::checkLiquidFeedAfterGrindDelay() {
             Serial.println("❌ 유동식 분석 실패");
         } else {
             int percent = int(ratio * 100);
-            Serial.printf("유동식 잔여율: %d%%\n", percent);
+            Serial.print("유동식 잔여율: ");
+            Serial.print(percent);
+            Serial.println("%");
 
             // 20% 미만이면 건강 체크 알림
             if (percent < 20) {
-                Serial.printf("⚠️ 반려동물이 유동식의 %d%%만 남겼습니다. 건강 체크가 필요합니다.\n", percent);
+                Serial.print("⚠️ 반려동물이 유동식의 ");
+                Serial.print(percent);
+                Serial.println("%만 남겼습니다. 건강 체크가 필요합니다.");
             }
         }
 
