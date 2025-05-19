@@ -4,15 +4,13 @@
 // ✅ feeder 파일 set up 함수
 // 로드셀, 서보모터 초기화
 void initFeeder(){
-  Serial.begin(115200);
+  Serial.begin(9600);
   hx711.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
   hx711.set_scale(calibration_factor);
   hx711.tare();  // 초기 영점(0) 설정
 
   servo.attach(SERVOPIN);
   servo.write(0);  // 서보 닫기
-
-  randomSeed(analogRead(0));  // 매번 다른 랜덤값 생성
 }
 
 // ===================== 시간 포맷 변환 =====================
@@ -34,15 +32,14 @@ void runFeedingSchedule() {
   }
 }
 
-
 // ✅ 사료를 실제로 투입하는 함수 (서보 + 로드셀)
 void executeFeeding(int index) {
-  Serial.println("[" + getTimeString(rtc.now()) + "] 급식 시작"); // 현재 시각 로그 출력(디버깅용용)
+  Serial.println("[" + getTimeString(rtc.now()) + "] 급식 시작"); // 현재 시각 로그 출력(디버깅용)
 
- portionGrams=calculatePortionGrams(); // !!!랜덤값 집어넣기!!!
+ portionGrams= 50;//calculatePortionGrams(); // !!!랜덤값 집어넣기!!!
 
   servo.write(90);         // 투입구 열기
-  delay(500);             // 사료 투하 대기 (0.5초)
+  //delay(500);             // 사료 투하 대기 (0.5초)
 
   float target = portionGrams;        // 목표 사료량
   float minAccept = target * 0.95;    // 허용 하한 (95%)
@@ -84,8 +81,6 @@ void resetDailyFeeding() {
   isFoodInputDone = false;
 }
 
-// ✅ 급식 완료 여부 반환
-bool isFeedingDone() {
 // ✅ 급식 완료 여부 반환
 bool isFeedingDone() {
   return isFoodInputDone;

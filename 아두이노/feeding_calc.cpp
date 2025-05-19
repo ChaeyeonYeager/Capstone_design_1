@@ -24,7 +24,7 @@ float calculatePortionGrams(int feedingCount, String feedTimes[], float dogWeigh
 
 // 이동 평균 기반 정밀 무게 측정 함수
 float getSuperStableWeight() {
-  const int numReadings = 20;
+  const int numReadings = 10;
   float readings[numReadings];
   float sum = 0;
 
