@@ -49,7 +49,8 @@ void PetFeeder::calculatePortion() {
 // 서보모터 + 로드셀 기반 사료 투입
 void PetFeeder::feedFood() {
   // initFeeder();  ← 제거: 생성자에서 이미 한 번 초기화했으므로 중복 호출 불필요
-  runFeedingSchedule();
+  //runFeedingSchedule();
+  executeFeeding();
   if (isFeedingDone()) feedingDone = true;
 }
 

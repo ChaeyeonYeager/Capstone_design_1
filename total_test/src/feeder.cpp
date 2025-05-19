@@ -8,7 +8,6 @@
 // ────────────────────────────────────────────────────────────────────────────
 // 전역 인스턴스 정의
 HX711      hx711;
-RTC_DS3231 rtc;
 Servo      servo;
 
 // 칼만 필터 변수 (static으로 은닉)
@@ -80,27 +79,15 @@ void initFeeder() {
   randomSeed(analogRead(0));
 }
 
-String getTimeString(DateTime now) {
-  char buf[6];
-  sprintf(buf, "%02d:%02d", now.hour(), now.minute());
-  return String(buf);
-}
+// void runFeedingSchedule() {
+//   executeFeeding();
+// }
 
-void runFeedingSchedule() {
-  DateTime now = rtc.now();
-  String t = getTimeString(now);
-  for (int i = 0; i < MAX; i++) {
-    if (!feedDoneToday[i] && t == feedTimes[i]) {
-      executeFeeding(i);
-    }
-  }
-}
-
-void executeFeeding(int idx) {
-  Serial.println("[" + getTimeString(rtc.now()) + "] 급식 실험 시작");
+void executeFeeding() {
+  Serial.println("[" + getTimeString(rtc.now()) + "] 급식 시작");
 
   // 1) 1회 급여량 계산 (전역 portionGrams에 저장)
-  calculatePortionGrams(feedCount, feedTimes, /* dogWeight, activeLvl, calPerKg */);
+  portionGrams = (feedCount, feedTimes, /* dogWeight, activeLvl, calPerKg */);
   float target = portionGrams;
   float minT   = target * (1 - tolerancePercent / 100.0);
   float maxT   = target * (1 + tolerancePercent / 100.0);
@@ -138,11 +125,6 @@ void executeFeeding(int idx) {
   feedDoneToday[idx] = true;
   isFoodInputDone    = true;
   Serial.println("✅ 실험 완료: " + String(portionGrams, 1) + "g");
-}
-
-void resetDailyFeeding() {
-  for (int i = 0; i < MAX; i++) feedDoneToday[i] = false;
-  isFoodInputDone = false;
 }
 
 bool isFeedingDone() {
