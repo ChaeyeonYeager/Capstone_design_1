@@ -47,19 +47,9 @@ void PetFeeder::calculatePortion() {
 }
 
 // (헤더에서 feedFood() 시그니처는 그대로 두고)
-void PetFeeder::feedFood() {
-<<<<<<< HEAD
-  // initFeeder();  ← 제거: 생성자에서 이미 한 번 초기화했으므로 중복 호출 불필요
-  //runFeedingSchedule();
-  executeFeeding();
-  if (isFeedingDone()) feedingDone = true;
-=======
-   
-   executeFeeding();
-
->>>>>>> origin
+void PetFeeder::feedFood() {  
+  runFeedingSchedule();
 }
-
 
 // 1차 물 주입 + 불림 처리
 void PetFeeder::soakFood() {

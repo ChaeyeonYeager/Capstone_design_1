@@ -11,6 +11,7 @@
 #include "g_LiquidFeedDetection.h"
 #include "d_addExtraWaterProcess.h"
 #include "c_foodSoaking.h"
+#include "feeder.h"
 
 #define MAX 6  // 최대 급여 횟수
 

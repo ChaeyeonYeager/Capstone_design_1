@@ -79,9 +79,9 @@ void initFeeder() {
   randomSeed(analogRead(0));
 }
 
-// void runFeedingSchedule() {
-//   executeFeeding();
-// }
+void runFeedingSchedule() {
+  executeFeeding();
+}
 
 void executeFeeding() {
   Serial.println("[" + getTimeString(rtc.now()) + "] 급식 시작");

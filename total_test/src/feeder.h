@@ -29,7 +29,7 @@ extern bool   isFoodInputDone;     // 급식 전체 완료 여부
 
 // 함수 선언
 void   initFeeder();                        // 하드웨어 초기화
-//void   runFeedingSchedule();                // 스케줄 확인 후 실행
+void   runFeedingSchedule();                // 스케줄 확인 후 실행
 void   executeFeeding();                    // 급식 루틴 수행
 bool   isFeedingDone();                     // 완료 여부 반환
 
