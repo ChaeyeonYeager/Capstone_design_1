@@ -75,12 +75,12 @@ void executeFeeding(int index) {
 }
 
 // ✅ 하루 시작 시 모든 급식 완료 플래그 초기화
-void resetDailyFeeding() {
-  for (int i = 0; i < MAX; i++) {
-    feedDoneToday[i] = false;
-  }
-  isFoodInputDone = false;
-}
+// void resetDailyFeeding() {
+//   for (int i = 0; i < MAX; i++) {
+//     feedDoneToday[i] = false;
+//   }
+//   isFoodInputDone = false;
+// }
 
 // ✅ 급식 완료 여부 반환
 bool isFeedingDone() {
