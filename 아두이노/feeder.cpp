@@ -5,12 +5,14 @@
 // 로드셀, 서보모터 초기화
 void initFeeder(){
   Serial.begin(9600);
-  hx711.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
+  hx711.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN); // 로드셀 초기화
   hx711.set_scale(calibration_factor);
-  hx711.tare();  // 초기 영점(0) 설정
+
 
   servo.attach(SERVOPIN);
   servo.write(0);  // 서보 닫기
+  
+  hx711.tare();  // 초기 영점(0) 설정  
 }
 
 // ===================== 시간 포맷 변환 =====================
