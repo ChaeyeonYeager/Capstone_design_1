@@ -1,14 +1,16 @@
 #ifndef PET_FEEDER_H
 #define PET_FEEDER_H
 
-#include <Arduino.h>
-#include "feeding_calc.h"
-#include "feeder.h"
-#include "WaterControl.h"
-#include "feed_grinder.h"
-#include "feed_level_check.h"
-#include "LiquidFeedDetection.h"
 
+#include <Arduino.h>
+#include "a_feeding_calc.h"
+#include "b_feeder.h"
+#include "Watercontrol.h"
+#include "e_feed_grinder.h"
+#include "f_feed_level_check.h"
+#include "g_LiquidFeedDetection.h"
+#include "d_addExtraWaterProcess.h"
+#include "c_foodSoaking.h"
 
 #define MAX 6  // 최대 급여 횟수
 
@@ -77,7 +79,7 @@ private:
   void soakFood();                // 1차 물 주입 + 불림
   void addExtraWater();           // 점도 조절용 물 주입
   void grindFood();               // 분쇄 (모터 작동)
-  void checkLiquidFeedAfterGrindDelay();
+  void checkLiquidFeedAfterGrindDelay(); 
 };
 
 #endif // PET_FEEDER_H

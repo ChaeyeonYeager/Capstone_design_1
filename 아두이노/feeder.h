@@ -21,7 +21,7 @@ extern Servo servo;
 
 // 설정값들 (앱 또는 초기 설정)
 float calibration_factor = -28000;        // 로드셀 보정값extern int feedCount;                     // 급여 횟수
-float plate_weight = 1012.0;              // 그릇 무게 (g)  
+float plate_weight = 774.0;              // 그릇 무게 (g)  
 extern String feedTimes[MAX];             // 급여 시간 (HH:MM 형식)
 extern float portionGrams;                // 1회 급여량 (g)
 extern bool feedDoneToday[MAX];           // 해당 시간 급여 완료 여부

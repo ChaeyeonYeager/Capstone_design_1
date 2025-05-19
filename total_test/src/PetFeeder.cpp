@@ -46,44 +46,29 @@ void PetFeeder::calculatePortion() {
   calculatePortionGrams(feedCount, feedTimes, petWeight, activityLevel, kcalPerKg);
 }
 
-// 서보모터 + 로드셀 기반 사료 투입
+// (헤더에서 feedFood() 시그니처는 그대로 두고)
 void PetFeeder::feedFood() {
+<<<<<<< HEAD
   // initFeeder();  ← 제거: 생성자에서 이미 한 번 초기화했으므로 중복 호출 불필요
   //runFeedingSchedule();
   executeFeeding();
   if (isFeedingDone()) feedingDone = true;
+=======
+   
+   executeFeeding();
+
+>>>>>>> origin
 }
+
 
 // 1차 물 주입 + 불림 처리
 void PetFeeder::soakFood() {
-  setTargetVolume(baseWaterVolume);  // 1:1 기준
-  initPump();
-
-  while (isPumpOn()) {
-    pumpUpdate();                    // 목표량까지 주입
-  }
-
-  resetVolume();
-  Serial.println("불림 완료 (1:1 물 주입)");
-  soakingDone = true;  // ← 변수명 오타 수정 (isSoaking → soakingDone)
+  soakFoodProcess(baseWaterVolume);
 }
 
 // 점도 조절을 위한 추가 물 주입
 void PetFeeder::addExtraWater() {
-  if (extraWaterVolume > 0) {
-    Serial.println("점도 조절용 물 추가 주입 시작");
-    setTargetVolume(extraWaterVolume);
-    initPump();
-
-    while (isPumpOn()) {
-      pumpUpdate();
-    }
-
-    resetVolume();
-    Serial.println("점도 조절 물 주입 완료");
-  } else {
-    Serial.println("점도 조절 불필요 (추가 물 없음)");
-  }
+  addExtraWaterProcess(extraWaterVolume);
 }
 
 // 모터를 이용한 분쇄 처리
@@ -125,11 +110,15 @@ void PetFeeder::checkLiquidFeedAfterGrindDelay() {
             Serial.println("❌ 유동식 분석 실패");
         } else {
             int percent = int(ratio * 100);
-            Serial.printf("유동식 잔여율: %d%%\n", percent);
+            Serial.print("유동식 잔여율: ");
+            Serial.print(percent);
+            Serial.println("%");
 
             // 20% 미만이면 건강 체크 알림
             if (percent < 20) {
-                Serial.printf("⚠️ 반려동물이 유동식의 %d%%만 남겼습니다. 건강 체크가 필요합니다.\n", percent);
+                Serial.print("⚠️ 반려동물이 유동식의 ");
+                Serial.print(percent);
+                Serial.println("%만 남겼습니다. 건강 체크가 필요합니다.");
             }
         }
 

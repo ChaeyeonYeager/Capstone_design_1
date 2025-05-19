@@ -1,20 +1,32 @@
-#ifndef WATER_CONTROL_H
-#define WATER_CONTROL_H
+#ifndef WATERCONTROL_H
+#define WATERCONTROL_H
 
-// 펌프 및 유량 센서 관련 핀 설정
-const int pumpPin = 7;             // 펌프 제어용 릴레이 핀
-const int flowSensorPin = 3;       // 유량 센서 신호 핀
+#include <Arduino.h>
 
-const int targetPulseCount = 45;   // 목표 펄스 수 (100mL 기준)
+// ────────────────────────────────────────────────────────────────────────────
+// 펌프 제어 및 유량 센서 핀 설정 (필요에 따라 변경)
+extern const int relayPin;        // 예: D3
+extern const int flowSensorPin;   // 예: D2
 
-// 초기화 및 동작 함수
-void initWaterSystem();            // 핀 모드 및 인터럽트 초기화
-void runWaterProcess();            // 물 투입 + 불림 통합 프로세스
-void countFlowPulse();             // 인터럽트용 펄스 증가 함수
-bool isSoakingDone();              // 불림 완료 여부 반환
+// 전체 물 투입 프로세스 완료 플래그
+extern bool isProcessDone;
 
-#endif
+// ────────────────────────────────────────────────────────────────────────────
+// 시스템 초기화
+// - Serial.begin
+// - relayPin OUTPUT, flowSensorPin INPUT_PULLUP 설정
+void initWaterSystem();
 
+// ────────────────────────────────────────────────────────────────────────────
+// @param units10ml: “10 ml 단위” 개수
+//   예) runWaterProcess(1) → 10 ml, runWaterProcess(5) → 50 ml
+// 내부에서 pulsePer10ml 상수와 곱해 필요한 펄스 수를 계산하여
+// 펌프 ON → 목표 펄스 도달 시 OFF 후 isProcessDone = true
+void runWaterProcess(int units10ml);
 
-// - runWaterProcess(): 펌프 제어 + 불림 통합 처리
-// - delay 시간 10분 → 30분으로 연장 (1800000ms)
+// ────────────────────────────────────────────────────────────────────────────
+// 30분 불림 대기 (delay(1800000))
+// 대기 완료 후 내부 isSoaking 플래그만 true로 올리고 리턴
+void waitSoaking();
+
+#endif // WATERCONTROL_H

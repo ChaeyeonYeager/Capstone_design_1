@@ -1,6 +1,6 @@
 // feeding_calc.h
-#ifndef FEEDING_CALC_H
-#define FEEDING_CALC_H
+#ifndef A_FEEDING_CALC_H
+#define A_FEEDING_CALC_H
 
 #include <Arduino.h>
 

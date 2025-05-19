@@ -1,5 +1,5 @@
-#ifndef FEED_GRINDER_H
-#define FEED_GRINDER_H
+#ifndef E_FEED_GRINDER_H
+#define E_FEED_GRINDER_H
 
 // 사료분쇄 핀 연결 설정
 const int IN1 = 7;

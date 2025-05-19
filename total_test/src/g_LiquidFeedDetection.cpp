@@ -1,5 +1,5 @@
 /* LiquidFeedDetection.cpp */
-#include "LiquidFeedDetection.h"
+#include "g_LiquidFeedDetection.h"
 
 #if defined(ARDUINO_ARCH_ESP32)
 #include <esp_camera.h>

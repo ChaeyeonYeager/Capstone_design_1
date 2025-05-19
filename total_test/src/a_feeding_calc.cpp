@@ -1,7 +1,7 @@
 // feeding_calc.cpp
 #include <Arduino.h>
-#include "feeding_calc.h"
-#include "feeder.h"  // hx711 전역 인스턴스 참조
+#include "a_feeding_calc.h"
+#include "b_feeder.h"  // hx711 전역 인스턴스 참조
 
 // 전역에 저장된 포션 그램
 float portionGrams = 0.0;

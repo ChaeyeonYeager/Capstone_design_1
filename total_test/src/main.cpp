@@ -2,6 +2,10 @@
 #include "PetFeeder.h"
 #include "RTClib.h"
 
+#include "b_calibration_routine.h"
+#include "b_calibration_util.h"
+#include "globals.h"
+
 RTC_DS3231 rtc;  // 실시간 시계 모듈
 
 const int petCount = 5;
@@ -46,6 +50,10 @@ void setup() {
   pets[2] = new PetFeeder(petNames[2], 7.3, 5, 2, feed3, 1.5, 350, viscosityLevels[2]);
   pets[3] = new PetFeeder(petNames[3], 4.5, 2, 2, feed4, 1.7, 350, viscosityLevels[3]);
   pets[4] = new PetFeeder(petNames[4], 6.8, 6, 2, feed5, 1.3, 350, viscosityLevels[4]);
+
+  calibration_factor = loadCalibrationFactor();  // EEPROM에서 로딩
+  runCalibration();  // 최초 실행 시만 호출 (혹은 조건 추가)
+
 }
 
 void loop() {

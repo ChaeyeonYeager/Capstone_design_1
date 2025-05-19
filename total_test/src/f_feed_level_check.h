@@ -1,5 +1,5 @@
-#ifndef FEED_LEVEL_CHECK_H
-#define FEED_LEVEL_CHECK_H
+#ifndef F_FEED_LEVEL_CHECK_H
+#define F_FEED_LEVEL_CHECK_H
 
 #include <Arduino.h>
 
