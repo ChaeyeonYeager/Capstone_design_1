@@ -76,8 +76,7 @@ void initFeeder() {
 
   servo.attach(SERVOPIN);
   servo.write(0);  // 닫기
-  randomSeed(analogRead(0));
-}
+ }
 
 void runFeedingSchedule() {
   executeFeeding();

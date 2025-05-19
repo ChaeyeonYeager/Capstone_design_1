@@ -116,9 +116,6 @@ void PetFeeder::checkLiquidFeedAfterGrindDelay() {
     }
 }
 
-
-
-
 // 급식 정보 반환 함수들
 int PetFeeder::getFeedCount() const {
   return feedCount;

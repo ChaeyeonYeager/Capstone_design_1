@@ -18,7 +18,7 @@ extern HX711      hx711;
 extern Servo      servo;
 
 // 설정값 (globals.cpp 등에 정의)
-extern float  calibration_factor;  // 로드셀 보정값
+extern float  calibration_factor = -28000;  // 로드셀 보정값
 extern int    feedCount;           // 급여 횟수
 
 // feeding_calc.cpp 에서 계산 후 저장되는 전역
