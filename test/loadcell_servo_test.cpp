@@ -13,7 +13,7 @@ float initialWeight = 0.0;
 const float threshold = 20.0;  // g 감소 기준
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(9600);
   scale.begin(DT_PIN, SCK_PIN);
   servo.attach(SERVO_PIN);
 

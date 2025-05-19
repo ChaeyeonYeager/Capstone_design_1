@@ -47,15 +47,12 @@ void executeFeeding(int index) {
   float target = portionGrams;        // 목표 사료량
   float minAccept = target * 0.95;    // 허용 하한 (95%)
   float maxAccept = target * 1.05;    // 허용 상한 (105%)
-  float target = portionGrams;        // 목표 사료량
-  float minAccept = target * 0.95;    // 허용 하한 (95%)
-  float maxAccept = target * 1.05;    // 허용 상한 (105%)
+
   float weight = 0;
 
   // ✅ 로드셀 무게가 목표 범위 안에 들어올 때까지 대기
   int timeout = 0;
-  // ✅ 로드셀 무게가 목표 범위 안에 들어올 때까지 대기
-  int timeout = 0;
+
   while (true) {
     float rawWeight=getSuperStableWeight();
     weight = rawWeight-plate_weight;
@@ -69,18 +66,8 @@ void executeFeeding(int index) {
       Serial.println("⚠️ 무게 측정 타임아웃. 급식 종료");
       break;
     }
-
-    // 목표 무게에 너무 오래 도달하지 못하면 안전 탈출
-    timeout++;
-    if (timeout > 50) { // 예: 약 1.5초 후 강제 종료
-      Serial.println("⚠️ 무게 측정 타임아웃. 급식 종료");
-      break;
-    }
   }
 
-  servo.write(0);                   // 투입구 닫기
-  feedDoneToday[index] = true;     // 급여 완료 플래그 설정
-  isFoodInputDone = true;
   servo.write(0);                   // 투입구 닫기
   feedDoneToday[index] = true;     // 급여 완료 플래그 설정
   isFoodInputDone = true;
@@ -88,15 +75,12 @@ void executeFeeding(int index) {
   Serial.println("급식 완료: " + String(weight, 1) + "g / 목표 " + String(target, 1) + "g");
 }
 
-// ✅ 하루 시작 시 모든 급식 완료 플래그 초기화
-void resetDailyFeeding() {
-  for (int i = 0; i < MAX; i++) {
+
 // ✅ 하루 시작 시 모든 급식 완료 플래그 초기화
 void resetDailyFeeding() {
   for (int i = 0; i < MAX; i++) {
     feedDoneToday[i] = false;
   }
-  isFoodInputDone = false;
   isFoodInputDone = false;
 }
 
