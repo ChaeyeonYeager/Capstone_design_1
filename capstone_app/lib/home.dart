@@ -1,3 +1,4 @@
+// home.dart
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -6,7 +7,7 @@ class HomePage extends StatelessWidget {
 
   void _logout(BuildContext context) async {
     await FirebaseAuth.instance.signOut();
-    Navigator.pushReplacementNamed(context, '/'); // 로그인으로 이동
+    Navigator.pushReplacementNamed(context, '/');
   }
 
   @override
@@ -24,6 +25,15 @@ class HomePage extends StatelessWidget {
         ],
       ),
       body: Center(child: Text('환영합니다, ${user?.email ?? "사용자"}님!')),
+
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.pushNamed(context, '/add');
+        },
+        tooltip: '추가하기',
+        child: const Icon(Icons.add),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 }

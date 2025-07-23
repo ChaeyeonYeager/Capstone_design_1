@@ -5,7 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
 import 'login.dart';
 import 'signup.dart';
-import 'home.dart';
+import 'home.dart'; // 여기에 HomePage 정의돼 있음
 import 'input_form_page.dart';
 
 void main() async {
@@ -24,31 +24,10 @@ class MyApp extends StatelessWidget {
       initialRoute: FirebaseAuth.instance.currentUser == null ? '/' : '/home',
       routes: {
         '/': (context) => const LoginPage(),
-        '/signup': (context) => const SignUpPage(), // 회원가입 라우트
+        '/signup': (context) => const SignUpPage(),
         '/home': (context) => const HomePage(),
+        '/add': (context) => const InputFormPage(),
       },
-    );
-  }
-}
-
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('홈')),
-      body: Center(
-        child: ElevatedButton.icon(
-          icon: const Icon(Icons.add),
-          label: const Text('추가하기'),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const InputFormPage()),
-            );
-          },
-        ),
-      ),
     );
   }
 }
