@@ -7,6 +7,7 @@ import 'login.dart';
 import 'signup.dart';
 import 'home.dart'; // 여기에 HomePage 정의돼 있음
 import 'input_form_page.dart';
+import 'pet_detail_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,6 +28,7 @@ class MyApp extends StatelessWidget {
         '/signup': (context) => const SignUpPage(),
         '/home': (context) => const HomePage(),
         '/add': (context) => const InputFormPage(),
+        '/detail': (context) => const PetDetailPage(),
       },
     );
   }
