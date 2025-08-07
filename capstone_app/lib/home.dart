@@ -69,9 +69,9 @@ class HomePage extends StatelessWidget {
             heroTag: 'camera',
             onPressed: () {
               // 카메라 관련 기능 또는 라우트
-              Navigator.pushNamed(context, '/camera');
+              Navigator.pushNamed(context, '/esp_camera');
             },
-            tooltip: '카메라',
+            tooltip: '펫캠',
             child: const Icon(Icons.camera_alt),
           ),
           const SizedBox(height: 16),
