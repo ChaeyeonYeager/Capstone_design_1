@@ -10,6 +10,10 @@ import 'input_form_page.dart';
 import 'pet_detail_page.dart';
 import 'camera.dart';
 
+
+import 'route_bus.dart';    // ✅ routeBus 싱글턴
+import 'mic_overlay.dart'; // ✅ 오버레이
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -31,6 +35,17 @@ class MyApp extends StatelessWidget {
         '/camera': (context) => const CameraCapturePage(),
         '/add': (context) => const InputFormPage(),
         '/detail': (context) => const PetDetailPage(),
+      },
+      // ✅ 여기!
+      navigatorObservers: [routeBus],
+      // ✅ 전역 오버레이
+      builder: (context, child) {
+        return Stack(
+          children: [
+            child ?? const SizedBox.shrink(),
+            const MicOverlay(),
+          ],
+        );
       },
     );
   }
