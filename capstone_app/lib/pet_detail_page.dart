@@ -1,8 +1,8 @@
-import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 import 'pet_edit_page.dart';
 
@@ -14,8 +14,12 @@ class PetDetailPage extends StatefulWidget {
 }
 
 class _PetDetailPageState extends State<PetDetailPage> {
-  File? _imageFile; // 모바일용 로컬 파일
-  Uint8List? _webImageBytes; // 웹용 이미지 바이트
+  // 버킷 상수
+  static const _bucket = 'gs://capstone-c8066.firebasestorage.app';
+
+  // 웹에서 촬영 직후 미리보기용 바이트(새로고침 전까지 캐시)
+  Uint8List? _webFaceBytes;
+  Uint8List? _webBodyBytes;
 
   @override
   Widget build(BuildContext context) {
@@ -28,17 +32,21 @@ class _PetDetailPageState extends State<PetDetailPage> {
 
     return StreamBuilder<DocumentSnapshot>(
       stream: petDocRef.snapshots(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
+      builder: (context, snap) {
+        if (!snap.hasData) {
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
           );
         }
 
-        final petData = snapshot.data!;
-        final data = petData.data() as Map<String, dynamic>;
+        final petData = snap.data!;
+        final data = petData.data() as Map<String, dynamic>? ?? {};
+
         final feedTimes = data['feedTimes'];
-        final imageUrl = data['imageUrl'] as String?;
+        final faceUrl = data['faceImageUrl'] as String?;
+        final bodyUrl = data['bodyImageUrl'] as String?;
+        final facePath = data['faceImagePath'] as String?;
+        final bodyPath = data['bodyImagePath'] as String?;
 
         return Scaffold(
           appBar: AppBar(
@@ -58,20 +66,29 @@ class _PetDetailPageState extends State<PetDetailPage> {
             ],
           ),
           body: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(16),
             child: ListView(
               children: [
-                if (imageUrl?.isNotEmpty == true) ...[
-                  kIsWeb
-                      ? (_webImageBytes != null
-                            ? Image.memory(_webImageBytes!)
-                            : Image.network(imageUrl!))
-                      : Image.network(imageUrl!),
-                  const SizedBox(height: 16),
-                ] else if (_imageFile != null) ...[
-                  Image.file(_imageFile!),
-                  const SizedBox(height: 16),
-                ],
+                Text('얼굴 사진', style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 8),
+                _storageImage(
+                  url: faceUrl,
+                  path: facePath,
+                  webBytes: _webFaceBytes,
+                  height: 180,
+                ),
+                const SizedBox(height: 16),
+
+                Text('몸통 사진', style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 8),
+                _storageImage(
+                  url: bodyUrl,
+                  path: bodyPath,
+                  webBytes: _webBodyBytes,
+                  height: 180,
+                ),
+                const SizedBox(height: 24),
+
                 Text('이름: ${data['name'] ?? '정보 없음'}'),
                 Text('몸무게: ${data['weight'] ?? '-'} kg'),
                 Text('나이: ${data['age'] ?? '-'} 세'),
@@ -82,6 +99,22 @@ class _PetDetailPageState extends State<PetDetailPage> {
                 ),
                 Text('100g당 칼로리: ${data['kcalPer100g'] ?? '-'} kcal'),
                 Text('유동성 단계: ${data['viscosityLevel'] ?? '-'}'),
+                const SizedBox(height: 20),
+                // 삭제 버튼
+                ElevatedButton(
+                  onPressed: () async {
+                    // Firebase에서 데이터 삭제
+                    await pet.reference.delete();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('반려동물 정보가 삭제되었습니다')),
+                    );
+                    Navigator.pop(context); // 이전 페이지로 돌아가기
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red, // 버튼 배경 색상 설정
+                  ),
+                  child: const Text('삭제'),
+                ),
               ],
             ),
           ),
@@ -90,29 +123,136 @@ class _PetDetailPageState extends State<PetDetailPage> {
             child: const Icon(Icons.camera_alt),
             onPressed: () async {
               final result = await Navigator.pushNamed(context, '/camera');
+              if (!mounted) return;
 
               if (result is Map<String, dynamic>) {
-                final String url = result['url'];
-                final Uint8List? bytes = result['bytes'];
+                final url = result['url'] as String?;
+                final bytes = result['bytes'] as Uint8List?;
+                final part =
+                    (result['part'] as String?) ?? 'face'; // 'face' | 'body'
+                final path = result['path'] as String?;
 
-                // Firestore에 이미지 URL 저장
-                await pet.reference.update({'imageUrl': url});
+                final urlField = part == 'body'
+                    ? 'bodyImageUrl'
+                    : 'faceImageUrl';
+                final pathField = part == 'body'
+                    ? 'bodyImagePath'
+                    : 'faceImagePath';
+
+                if (url != null) {
+                  await pet.reference.update({
+                    urlField: url,
+                    if (path != null) pathField: path,
+                  });
+                }
 
                 setState(() {
-                  _imageFile = null;
-                  _webImageBytes = bytes;
+                  if (kIsWeb && bytes != null) {
+                    if (part == 'body') {
+                      _webBodyBytes = bytes;
+                    } else {
+                      _webFaceBytes = bytes;
+                    }
+                  }
                 });
 
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('📸 사진 업로드 완료!')),
-                  );
-                }
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      '📸 ${part == "body" ? "몸통" : "얼굴"} 사진 업로드 완료!',
+                    ),
+                  ),
+                );
               }
             },
           ),
         );
       },
+    );
+  }
+
+  Widget _storageImage({
+    required String? url,
+    required String? path,
+    Uint8List? webBytes,
+    double height = 180,
+  }) {
+    if (kIsWeb && webBytes != null) {
+      return Image.memory(webBytes, height: height, fit: BoxFit.cover);
+    }
+
+    if ((path ?? '').isNotEmpty) {
+      return _sdkImage(path!, height, fallbackUrl: url);
+    }
+
+    if ((url ?? '').isNotEmpty) {
+      return Image.network(
+        url!,
+        height: height,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => _placeholderBox('이미지 로드 실패(URL)'),
+      );
+    }
+
+    return _placeholderBox('이미지가 없습니다.');
+  }
+
+  Widget _sdkImage(String fullPath, double height, {String? fallbackUrl}) {
+    final storage = FirebaseStorage.instanceFor(bucket: _bucket);
+    print('[IMG] getData start: bucket=$_bucket, path=$fullPath');
+
+    final future = storage
+        .ref(fullPath)
+        .getData(10 * 1024 * 1024)
+        .timeout(const Duration(seconds: 15));
+
+    return FutureBuilder<Uint8List?>(
+      // Firebase Storage에서 이미지 가져오기
+      future: future,
+      builder: (context, snap) {
+        if (snap.connectionState != ConnectionState.done) {
+          return SizedBox(
+            height: height,
+            child: const Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        if (snap.hasError) {
+          print('[IMG] getData error for $fullPath => ${snap.error}');
+          if ((fallbackUrl ?? '').isNotEmpty) {
+            return Image.network(
+              fallbackUrl!,
+              height: height,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) =>
+                  _placeholderBox('이미지 로드 실패(SDK+URL)'),
+            );
+          }
+          return _placeholderBox('이미지 로드 실패(SDK)');
+        }
+
+        final bytes = snap.data;
+        if (bytes == null || bytes.isEmpty) {
+          print('[IMG] getData returned null/empty for $fullPath');
+          return _placeholderBox('이미지 로드 실패(빈 데이터)');
+        }
+
+        print('[IMG] getData success: ${bytes.length} bytes for $fullPath');
+        return Image.memory(bytes, height: height, fit: BoxFit.cover);
+      },
+    );
+  }
+
+  Widget _placeholderBox(String text) {
+    return Container(
+      height: 180,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: Colors.grey.shade200,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Text(text, style: const TextStyle(color: Colors.grey)),
     );
   }
 }
