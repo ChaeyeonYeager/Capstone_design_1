@@ -86,17 +86,14 @@ class _CameraCapturePageState extends State<CameraCapturePage> {
         });
       });
 
-      // 업로드 완료 후 다운로드 URL + 경로
       await task;
       final url = await ref.getDownloadURL();
-      final path = ref.fullPath; // ✅ 'images/face/xxx.jpg' 같은 경로
 
       if (context.mounted) {
         Navigator.pop(context, {
           'url': url,
-          'bytes': _imageBytes,
-          'part': part, // 'face' | 'body'
-          'path': path, // ✅ 경로 추가
+          'bytes': _imageBytes, // 웹 미리보기용
+          'part': part, // ✅ 어떤 파트인지 돌려줌
         });
       }
     } catch (e) {

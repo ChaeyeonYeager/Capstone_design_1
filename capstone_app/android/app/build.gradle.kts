@@ -1,10 +1,11 @@
-plugins {
-    id("com.android.application")
-    kotlin("android")
-    id("com.google.gms.google-services") // Google Services 플러그인 적용
-}
+// plugins {
+//     id("com.android.application")
+//     kotlin("android")
+//     id("com.google.gms.google-services") // Google Services 플러그인 적용
+// }
 
 android {
+  
     namespace = "com.example.capstone_app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion

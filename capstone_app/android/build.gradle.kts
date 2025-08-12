@@ -4,8 +4,9 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("com.android.tools.build:gradle:7.4.2")  // 예시 버전, 프로젝트에 맞게 변경
+        classpath("com.android.tools.build:gradle:8.4.2")  // 예시 버전, 프로젝트에 맞게 변경
         classpath("com.google.gms:google-services:4.3.15")
+        classpath ("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.24")
     }
 }
 
