@@ -64,7 +64,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '238655575119',
     projectId: 'capstone-c8066',
     storageBucket: 'capstone-c8066.firebasestorage.app',
-    iosClientId: '238655575119-q823ocbdoerjtb6o9ri96rc4l0gjnl96.apps.googleusercontent.com',
+    iosClientId:
+        '238655575119-q823ocbdoerjtb6o9ri96rc4l0gjnl96.apps.googleusercontent.com',
     iosBundleId: 'com.example.capstoneApp',
   );
 
@@ -74,7 +75,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '238655575119',
     projectId: 'capstone-c8066',
     storageBucket: 'capstone-c8066.firebasestorage.app',
-    iosClientId: '238655575119-q823ocbdoerjtb6o9ri96rc4l0gjnl96.apps.googleusercontent.com',
+    iosClientId:
+        '238655575119-q823ocbdoerjtb6o9ri96rc4l0gjnl96.apps.googleusercontent.com',
     iosBundleId: 'com.example.capstoneApp',
   );
 
@@ -87,5 +89,4 @@ class DefaultFirebaseOptions {
     storageBucket: 'capstone-c8066.firebasestorage.app',
     measurementId: 'G-ZWNJH9G9VW',
   );
-
 }
