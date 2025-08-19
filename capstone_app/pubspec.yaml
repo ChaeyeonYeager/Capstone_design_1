@@ -48,7 +48,7 @@ dependencies:
   audioplayers: ^5.2.0
   record: ^5.0.4
   file_picker: ^8.0.0
-
+  flutter_bluetooth_serial: ^0.4.0
 
 
 dev_dependencies:
