@@ -7,15 +7,17 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:audioplayers/audioplayers.dart';
 
 import 'pet_edit_page.dart';
+import 'record.dart';
 
 /// ---------- 여러 마리 지원: 개별 탐지 항목 ----------
 class DetectionItem {
-  final String label; // 이름(라벨)
-  final double score; // 매칭 점수(0~1)
-  final bool nearBowl; // 급식기 ROI 근처인지
-  final List<dynamic>? box; // [x1,y1,x2,y2] (옵션)
+  final String label;            // 이름(라벨)
+  final double score;            // 매칭 점수(0~1)
+  final bool nearBowl;           // 급식기 ROI 근처인지
+  final List<dynamic>? box;      // [x1,y1,x2,y2] (옵션)
 
   DetectionItem({
     required this.label,
@@ -36,12 +38,12 @@ class DetectionItem {
 
 /// ---------- /status 전체 ----------
 class DetectionStatus {
-  final bool found; // 임계점 이상 탐지 존재?
-  final double score; // 베스트 스코어
-  final String? label; // 베스트 라벨
+  final bool found;                  // 임계점 이상 탐지 존재?
+  final double score;                // 베스트 스코어
+  final String? label;               // 베스트 라벨
   final List<DetectionItem> detections; // ★ 여러 마리 결과 리스트
-  final bool nearBowlAny; // 어떤 대상이라도 그릇 근처?
-  final bool eating; // 식사 중 판단
+  final bool nearBowlAny;            // 어떤 대상이라도 그릇 근처?
+  final bool eating;                 // 식사 중 판단
 
   DetectionStatus({
     required this.found,
@@ -91,30 +93,29 @@ class _PetDetailPageState extends State<PetDetailPage> {
 
   // 🔧 분석 서버 URL (맥북 IP로 바꿔줘!)
   final String _serverBaseUrl = 'http://192.168.0.207:8000';
-  final String _statusUrl = 'http://192.168.0.207:8000/status';
+  final String _statusUrl     = 'http://192.168.0.207:8000/status';
 
   // 상태 폴링
   DetectionStatus? _detectionStatus;
   Timer? _statusTimer;
 
+  // 오디오 플레이어 (웹/안드/ios 공통)
+  late final AudioPlayer _player;
+
   @override
   void initState() {
     super.initState();
+    _player = AudioPlayer();
     _startStatusPolling();
   }
 
   void _startStatusPolling() {
-    _statusTimer = Timer.periodic(
-      const Duration(seconds: 1),
-      (_) => _fetchDetectionStatus(),
-    );
+    _statusTimer = Timer.periodic(const Duration(seconds: 1), (_) => _fetchDetectionStatus());
   }
 
   Future<void> _fetchDetectionStatus() async {
     try {
-      final res = await http
-          .get(Uri.parse(_statusUrl))
-          .timeout(const Duration(seconds: 2));
+      final res = await http.get(Uri.parse(_statusUrl)).timeout(const Duration(seconds: 2));
       if (res.statusCode == 200) {
         final jsonData = jsonDecode(res.body) as Map<String, dynamic>;
         final status = DetectionStatus.fromJson(jsonData);
@@ -130,6 +131,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
   @override
   void dispose() {
     _statusTimer?.cancel();
+    _player.dispose();
     super.dispose();
   }
 
@@ -158,10 +160,10 @@ class _PetDetailPageState extends State<PetDetailPage> {
         final bodyUrl = data['bodyImageUrl'] as String?;
         final facePath = data['faceImagePath'] as String?;
         final bodyPath = data['bodyImagePath'] as String?;
+        final voiceUrl = data['voiceUrl'] as String?; // 🔊 저장된 호출 음성
 
         // ✅ 자동 등록 (한 번만): 첫 등록만 reset=true, 이후는 append
-        if (!_registeredTargets &&
-            (faceUrl?.isNotEmpty == true || bodyUrl?.isNotEmpty == true)) {
+        if (!_registeredTargets && (faceUrl?.isNotEmpty == true || bodyUrl?.isNotEmpty == true)) {
           _registeredTargets = true;
 
           final urls = <String>[];
@@ -191,9 +193,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (_) => PetEditPage(pet: petData),
-                    ),
+                    MaterialPageRoute(builder: (_) => PetEditPage(pet: petData)),
                   );
                 },
               ),
@@ -203,93 +203,132 @@ class _PetDetailPageState extends State<PetDetailPage> {
             padding: const EdgeInsets.all(16),
             child: ListView(
               children: [
-                // ---------- 탐지 상태 표시(여러 마리) ----------
                 _buildDetectionStatusWidget(),
                 const SizedBox(height: 16),
 
+                // 얼굴/몸통 이미지
                 Text('얼굴 사진', style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 8),
-                _storageImage(
-                  url: faceUrl,
-                  path: facePath,
-                  webBytes: _webFaceBytes,
-                  height: 180,
-                ),
+                _storageImage(url: faceUrl, path: facePath, webBytes: _webFaceBytes, height: 180),
                 const SizedBox(height: 16),
 
                 Text('몸통 사진', style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 8),
-                _storageImage(
-                  url: bodyUrl,
-                  path: bodyPath,
-                  webBytes: _webBodyBytes,
-                  height: 180,
-                ),
+                _storageImage(url: bodyUrl, path: bodyPath, webBytes: _webBodyBytes, height: 180),
                 const SizedBox(height: 24),
 
+                // 반려동물 정보
                 Text('이름: ${data['name'] ?? '정보 없음'}'),
                 Text('몸무게: ${data['weight'] ?? '-'} kg'),
                 Text('나이: ${data['age'] ?? '-'} 세'),
                 Text('활동 수준: ${data['activityLevel'] ?? '-'}'),
                 Text('급식 횟수: ${data['feedCount'] ?? '-'} 회'),
-                Text(
-                  '급식 시간: ${data['feedTimes'] is List ? (data['feedTimes'] as List).join(", ") : "등록되지 않음"}',
-                ),
+                Text('급식 시간: ${data['feedTimes'] is List ? (data['feedTimes'] as List).join(", ") : "등록되지 않음"}'),
                 Text('100g당 칼로리: ${data['kcalPer100g'] ?? '-'} kcal'),
                 Text('유동성 단계: ${data['viscosityLevel'] ?? '-'}'),
+
+                const SizedBox(height: 24),
+
+                // 🔊 녹음된 음성 재생 UI
+                if (voiceUrl != null && voiceUrl.isNotEmpty) ...[
+                  Text('📢 등록된 호출 음성', style: Theme.of(context).textTheme.titleMedium),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      ElevatedButton.icon(
+                        icon: const Icon(Icons.play_arrow),
+                        label: const Text('재생'),
+                        onPressed: () async {
+                          await _player.stop();
+                          await _player.play(UrlSource(voiceUrl));
+                        },
+                      ),
+                      const SizedBox(width: 12),
+                      OutlinedButton.icon(
+                        icon: const Icon(Icons.stop),
+                        label: const Text('정지'),
+                        onPressed: () async {
+                          await _player.stop();
+                        },
+                      ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),
-          floatingActionButton: FloatingActionButton(
-            tooltip: '사진 촬영',
-            child: const Icon(Icons.camera_alt),
-            onPressed: () async {
-              final result = await Navigator.pushNamed(context, '/camera');
-              if (!mounted) return;
 
-              if (result is Map<String, dynamic>) {
-                final url = result['url'] as String?;
-                final bytes = result['bytes'] as Uint8List?;
-                final part =
-                    (result['part'] as String?) ?? 'face'; // 'face' | 'body'
-                final path = result['path'] as String?;
+          // 🔹 녹음 버튼 + 카메라 버튼 2개로
+          floatingActionButton: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FloatingActionButton(
+                heroTag: 'recordBtn',
+                tooltip: '음성 녹음',
+                child: const Icon(Icons.mic),
+                onPressed: () async {
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => RecordPage(pet: petData)),
+                  );
 
-                final urlField = part == 'body'
-                    ? 'bodyImageUrl'
-                    : 'faceImageUrl';
-                final pathField = part == 'body'
-                    ? 'bodyImagePath'
-                    : 'faceImagePath';
-
-                if (url != null) {
-                  await pet.reference.update({
-                    urlField: url,
-                    if (path != null) pathField: path,
-                  });
-
-                  // 사진 바뀌면 다시 등록되도록 초기화
-                  _registeredTargets = false;
-                }
-
-                setState(() {
-                  if (kIsWeb && bytes != null) {
-                    if (part == 'body') {
-                      _webBodyBytes = bytes;
-                    } else {
-                      _webFaceBytes = bytes;
+                  if (result is Map<String, dynamic>) {
+                    final newVoiceUrl = result['voiceUrl'] as String?;
+                    if (newVoiceUrl != null && newVoiceUrl.isNotEmpty) {
+                      await pet.reference.update({'voiceUrl': newVoiceUrl});
+                      if (!mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('🎤 음성 업로드 완료!')),
+                      );
                     }
                   }
-                });
+                },
+              ),
+              const SizedBox(height: 12),
+              FloatingActionButton(
+                heroTag: 'cameraBtn',
+                tooltip: '사진 촬영',
+                child: const Icon(Icons.camera_alt),
+                onPressed: () async {
+                  final result = await Navigator.pushNamed(context, '/camera');
+                  if (!mounted) return;
 
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      '📸 ${part == "body" ? "몸통" : "얼굴"} 사진 업로드 완료!',
-                    ),
-                  ),
-                );
-              }
-            },
+                  if (result is Map<String, dynamic>) {
+                    final url = result['url'] as String?;
+                    final bytes = result['bytes'] as Uint8List?;
+                    final part = (result['part'] as String?) ?? 'face'; // 'face' | 'body'
+                    final path = result['path'] as String?;
+
+                    final urlField = part == 'body' ? 'bodyImageUrl' : 'faceImageUrl';
+                    final pathField = part == 'body' ? 'bodyImagePath' : 'faceImagePath';
+
+                    if (url != null) {
+                      await pet.reference.update({
+                        urlField: url,
+                        if (path != null) pathField: path,
+                      });
+
+                      // 사진 바뀌면 다시 등록되도록 초기화
+                      _registeredTargets = false;
+                    }
+
+                    setState(() {
+                      if (kIsWeb && bytes != null) {
+                        if (part == 'body') {
+                          _webBodyBytes = bytes;
+                        } else {
+                          _webFaceBytes = bytes;
+                        }
+                      }
+                    });
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('📸 ${part == "body" ? "몸통" : "얼굴"} 사진 업로드 완료!')),
+                    );
+                  }
+                },
+              ),
+            ],
           ),
         );
       },
@@ -336,11 +375,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
     if (!ds.found || ds.detections.isEmpty) {
       return const Text(
         '탐지 대상 없음',
-        style: TextStyle(
-          color: Colors.redAccent,
-          fontWeight: FontWeight.bold,
-          fontSize: 16,
-        ),
+        style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold, fontSize: 16),
       );
     }
 
@@ -370,21 +405,14 @@ class _PetDetailPageState extends State<PetDetailPage> {
       children: [
         Text(
           '$foundLine 발견',
-          style: const TextStyle(
-            color: Colors.green,
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
+          style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 16),
         ),
         if (eatingLine != null)
           Padding(
             padding: const EdgeInsets.only(top: 4),
             child: Text(
               eatingLine,
-              style: const TextStyle(
-                color: Colors.orange,
-                fontWeight: FontWeight.w600,
-              ),
+              style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.w600),
             ),
           ),
       ],
@@ -444,8 +472,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
               fallbackUrl!,
               height: height,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) =>
-                  _placeholderBox('이미지 로드 실패(SDK+URL)'),
+              errorBuilder: (_, __, ___) => _placeholderBox('이미지 로드 실패(SDK+URL)'),
             );
           }
           return _placeholderBox('이미지 로드 실패(SDK)');
@@ -457,9 +484,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
           return _placeholderBox('이미지 로드 실패(빈 데이터)');
         }
 
-        debugPrint(
-          '[IMG] getData success: ${bytes.length} bytes for $fullPath',
-        );
+        debugPrint('[IMG] getData success: ${bytes.length} bytes for $fullPath');
         return Image.memory(bytes, height: height, fit: BoxFit.cover);
       },
     );

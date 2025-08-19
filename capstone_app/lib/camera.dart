@@ -58,9 +58,9 @@ class _CameraCapturePageState extends State<CameraCapturePage> {
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('로그인이 필요합니다.')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('로그인이 필요합니다.')),
+        );
         return;
       }
 
@@ -80,9 +80,8 @@ class _CameraCapturePageState extends State<CameraCapturePage> {
 
       task.snapshotEvents.listen((s) {
         setState(() {
-          _uploadProgress = s.totalBytes > 0
-              ? (s.bytesTransferred / s.totalBytes * 100)
-              : 0;
+          _uploadProgress =
+              s.totalBytes > 0 ? (s.bytesTransferred / s.totalBytes * 100) : 0;
         });
       });
 
@@ -93,14 +92,14 @@ class _CameraCapturePageState extends State<CameraCapturePage> {
         Navigator.pop(context, {
           'url': url,
           'bytes': _imageBytes, // 웹 미리보기용
-          'part': part, // ✅ 어떤 파트인지 돌려줌
+          'part': part,         // ✅ 어떤 파트인지 돌려줌
         });
       }
     } catch (e) {
       print('업로드 실패: $e');
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('업로드 실패')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('업로드 실패')),
+      );
     } finally {
       if (mounted) setState(() => _isUploading = false);
     }

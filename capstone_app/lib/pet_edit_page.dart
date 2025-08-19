@@ -29,25 +29,13 @@ class _PetEditPageState extends State<PetEditPage> {
     super.initState();
     final data = widget.pet.data() as Map<String, dynamic>? ?? {};
 
-    nameController = TextEditingController(
-      text: (data['name'] ?? '').toString(),
-    );
-    weightController = TextEditingController(
-      text: (data['weight'] ?? '').toString(),
-    );
+    nameController = TextEditingController(text: (data['name'] ?? '').toString());
+    weightController = TextEditingController(text: (data['weight'] ?? '').toString());
     ageController = TextEditingController(text: (data['age'] ?? '').toString());
-    activityController = TextEditingController(
-      text: (data['activityLevel'] ?? '').toString(),
-    );
-    feedCountController = TextEditingController(
-      text: (data['feedCount'] ?? '').toString(),
-    );
-    kcalController = TextEditingController(
-      text: (data['kcalPer100g'] ?? '').toString(),
-    );
-    viscosityController = TextEditingController(
-      text: (data['viscosityLevel'] ?? '').toString(),
-    );
+    activityController = TextEditingController(text: (data['activityLevel'] ?? '').toString());
+    feedCountController = TextEditingController(text: (data['feedCount'] ?? '').toString());
+    kcalController = TextEditingController(text: (data['kcalPer100g'] ?? '').toString());
+    viscosityController = TextEditingController(text: (data['viscosityLevel'] ?? '').toString());
 
     final rawTimes = data['feedTimes'];
     if (rawTimes is List) {
@@ -75,9 +63,9 @@ class _PetEditPageState extends State<PetEditPage> {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('로그인이 필요합니다.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('로그인이 필요합니다.')),
+      );
       return;
     }
 
@@ -88,41 +76,37 @@ class _PetEditPageState extends State<PetEditPage> {
           .collection('pets')
           .doc(widget.pet.id)
           .update({
-            'name': nameController.text.trim(),
-            'weight': double.tryParse(weightController.text.trim()) ?? 0,
-            'age': int.tryParse(ageController.text.trim()) ?? 0,
-            'activityLevel':
-                double.tryParse(activityController.text.trim()) ?? 1.0,
-            'feedCount': int.tryParse(feedCountController.text.trim()) ?? 0,
-            'kcalPer100g': int.tryParse(kcalController.text.trim()) ?? 0,
-            'viscosityLevel':
-                int.tryParse(viscosityController.text.trim()) ?? 1,
-            'feedTimes': formattedFeedTimes,
-            'updatedAt': FieldValue.serverTimestamp(),
-          });
+        'name': nameController.text.trim(),
+        'weight': double.tryParse(weightController.text.trim()) ?? 0,
+        'age': int.tryParse(ageController.text.trim()) ?? 0,
+        'activityLevel': double.tryParse(activityController.text.trim()) ?? 1.0,
+        'feedCount': int.tryParse(feedCountController.text.trim()) ?? 0,
+        'kcalPer100g': int.tryParse(kcalController.text.trim()) ?? 0,
+        'viscosityLevel': int.tryParse(viscosityController.text.trim()) ?? 1,
+        'feedTimes': formattedFeedTimes,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
 
       // ★ 저장 성공 후: 서버 타깃 자동 재구성 (모든 펫 기준으로 /targets 리빌드)
       await TargetSync.rebuildTargetsFromFirestore(uid);
 
       if (!mounted) return;
       Navigator.pop(context);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('수정 완료 및 타깃 재등록 완료')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('수정 완료 및 타깃 재등록 완료')),
+      );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('저장 실패: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('저장 실패: $e')),
+      );
     }
   }
 
   Future<void> _pickTime(int index) async {
     final time = await showTimePicker(
       context: context,
-      initialTime: feedTimes.length > index
-          ? feedTimes[index]
-          : TimeOfDay.now(),
+      initialTime: feedTimes.length > index ? feedTimes[index] : TimeOfDay.now(),
     );
     if (time != null) {
       setState(() {
@@ -139,9 +123,7 @@ class _PetEditPageState extends State<PetEditPage> {
     final count = int.tryParse(feedCountController.text.trim()) ?? 0;
     setState(() {
       if (feedTimes.length < count) {
-        feedTimes.addAll(
-          List.generate(count - feedTimes.length, (_) => TimeOfDay.now()),
-        );
+        feedTimes.addAll(List.generate(count - feedTimes.length, (_) => TimeOfDay.now()));
       } else if (feedTimes.length > count) {
         feedTimes = feedTimes.sublist(0, count);
       }
@@ -213,7 +195,10 @@ class _PetEditPageState extends State<PetEditPage> {
               keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 24),
-            ElevatedButton(onPressed: _saveChanges, child: const Text('수정 완료')),
+            ElevatedButton(
+              onPressed: _saveChanges,
+              child: const Text('수정 완료'),
+            ),
           ],
         ),
       ),

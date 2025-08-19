@@ -7,9 +7,9 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 
 // 오버레이가 보일 라우트들 (원하는 화면만 추가하면 됨)
 const _visibleRoutes = <String>{
-  '/camera',     // 카메라 촬영 화면
-  '/detail',     // 상세 페이지
-  '/add',        // 입력 폼 등
+  '/camera', // 카메라 촬영 화면
+  '/detail', // 상세 페이지
+  '/add', // 입력 폼 등
 };
 
 class MicOverlay extends StatefulWidget {
@@ -34,7 +34,7 @@ class _MicOverlayState extends State<MicOverlay> {
         return Positioned(
           right: 16,
           bottom: 80,
-          child: FloatingActionButton.extended(r
+          child: FloatingActionButton.extended(
             heroTag: 'mic-overlay',
             onPressed: _onPressed,
             icon: Icon(_recording ? Icons.stop : Icons.mic),
@@ -57,15 +57,15 @@ class _MicOverlayState extends State<MicOverlay> {
           _dur = res.duration;
         });
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('녹음 완료: ${_dur.inSeconds}s')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('녹음 완료: ${_dur.inSeconds}s')));
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('녹음 오류: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('녹음 오류: $e')));
     }
   }
 }

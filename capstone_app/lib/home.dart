@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'target_sync.dart';
 
+
+
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
@@ -18,14 +20,8 @@ class HomePage extends StatelessWidget {
         title: const Text('삭제 확인'),
         content: Text('${pet['name']}을(를) 삭제할까요?'),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('취소'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('삭제'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('취소')),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('삭제')),
         ],
       ),
     );
@@ -42,9 +38,9 @@ class HomePage extends StatelessWidget {
     // 삭제 이후 전체 타깃 재구성(서버 갱신)
     await TargetSync.rebuildTargetsFromFirestore(user.uid);
     if (context.mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('삭제 완료')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('삭제 완료')),
+      );
     }
   }
 

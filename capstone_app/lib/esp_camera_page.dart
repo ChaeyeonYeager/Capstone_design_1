@@ -8,9 +8,9 @@ import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:http/http.dart' as http;
 
-const String kServerBase = 'http://192.168.0.207:8000'; // ★ 수정
-const String kStatusUrl = '$kServerBase/status';
-const String kRawUrl = 'http://192.168.0.203:4747/video'; // DroidCam 원본
+const String kServerBase = 'http://192.168.0.207:8000';          // ★ 수정
+const String kStatusUrl  = '$kServerBase/status';
+const String kRawUrl     = 'http://192.168.0.203:4747/video'; // DroidCam 원본
 
 class EspCameraPage extends StatefulWidget {
   const EspCameraPage({super.key});
@@ -27,9 +27,9 @@ class _EspCameraPageState extends State<EspCameraPage> {
   Timer? _statusTimer;
   Map<String, dynamic>? _status;
 
-  String get _currentUrl => _detectOn
-      ? '$kServerBase/stream?src=${Uri.encodeComponent(kRawUrl)}'
-      : kRawUrl;
+  String get _currentUrl =>
+      _detectOn ? '$kServerBase/stream?src=${Uri.encodeComponent(kRawUrl)}'
+                : kRawUrl;
 
   @override
   void initState() {
@@ -53,10 +53,7 @@ class _EspCameraPageState extends State<EspCameraPage> {
     }
 
     // status polling
-    _statusTimer = Timer.periodic(
-      const Duration(seconds: 1),
-      (_) => _fetchStatus(),
-    );
+    _statusTimer = Timer.periodic(const Duration(seconds: 1), (_) => _fetchStatus());
   }
 
   @override
@@ -71,9 +68,7 @@ class _EspCameraPageState extends State<EspCameraPage> {
       return;
     }
     try {
-      final res = await http
-          .get(Uri.parse(kStatusUrl))
-          .timeout(const Duration(seconds: 2));
+      final res = await http.get(Uri.parse(kStatusUrl)).timeout(const Duration(seconds: 2));
       if (res.statusCode == 200) {
         final data = json.decode(res.body) as Map<String, dynamic>;
         if (mounted) setState(() => _status = data);
@@ -138,19 +133,17 @@ class _EspCameraPageState extends State<EspCameraPage> {
       appBar: AppBar(
         title: Text(title),
         actions: [
-          Row(
-            children: [
-              const Text('탐지'),
-              Switch(
-                value: _detectOn,
-                onChanged: (v) {
-                  setState(() => _detectOn = v);
-                  _reload();
-                },
-              ),
-              const SizedBox(width: 8),
-            ],
-          ),
+          Row(children: [
+            const Text('탐지'),
+            Switch(
+              value: _detectOn,
+              onChanged: (v) {
+                setState(() => _detectOn = v);
+                _reload();
+              },
+            ),
+            const SizedBox(width: 8),
+          ]),
         ],
       ),
       body: Stack(
@@ -161,7 +154,11 @@ class _EspCameraPageState extends State<EspCameraPage> {
             top: 12,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [namesPill(), const SizedBox(height: 8), eatingPill()],
+              children: [
+                namesPill(),
+                const SizedBox(height: 8),
+                eatingPill(),
+              ],
             ),
           ),
         ],
@@ -178,10 +175,7 @@ class _EspCameraPageState extends State<EspCameraPage> {
       ),
       child: Text(
         text,
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.bold,
-        ),
+        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
       ),
     );
   }
