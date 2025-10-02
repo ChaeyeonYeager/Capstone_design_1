@@ -58,3 +58,4 @@ float getSuperStableWeight() {
   float result = (cnt > 0 ? filtSum / cnt : avg);
   return result * 1000.0;  // kg → g
 }
+
