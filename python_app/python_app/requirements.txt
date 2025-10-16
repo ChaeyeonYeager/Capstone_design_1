@@ -1,0 +1,11 @@
+# 기본 OpenCV (영상 처리)
+opencv-python
+
+# YOLO (Ultralytics)
+ultralytics
+
+# 시리얼 통신 (Python ↔ Arduino)
+pyserial
+
+# 수학 계산 (보통 numpy는 YOLO 내부에서도 필요)
+numpy

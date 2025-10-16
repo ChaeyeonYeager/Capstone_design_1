@@ -1,0 +1,83 @@
+{
+  "까미": {
+    "breed": "미니어처 핀셔",
+    "size": "small",
+    "weight": 3.5,
+    "age": 4,
+    "activeLvl": 1.6,
+    "calPerKg": 3500,
+    "feedingCount": 2
+  },
+  "하트": {
+    "breed": "베들링턴 테리어",
+    "size": "medium",
+    "weight": 9.0,
+    "age": 3,
+    "activeLvl": 1.6,
+    "calPerKg": 3500,
+    "feedingCount": 2
+  },
+  "콩이": {
+    "breed": "푸들",
+    "size": "small",
+    "weight": 4.0,
+    "age": 5,
+    "activeLvl": 1.6,
+    "calPerKg": 3500,
+    "feedingCount": 2
+  },
+  "벤지": {
+    "breed": "리트리버",
+    "size": "large",
+    "weight": 28.0,
+    "age": 6,
+    "activeLvl": 1.4,
+    "calPerKg": 3400,
+    "feedingCount": 2
+  },
+  "율무": {
+    "breed": "스패니얼",
+    "size": "medium",
+    "weight": 10.5,
+    "age": 5,
+    "activeLvl": 1.6,
+    "calPerKg": 3500,
+    "feedingCount": 2
+  },
+  "설기": {
+    "breed": "말티즈",
+    "size": "small",
+    "weight": 3.0,
+    "age": 4,
+    "activeLvl": 1.6,
+    "calPerKg": 3500,
+    "feedingCount": 2
+  },
+  "모모": {
+    "breed": "사모예드",
+    "size": "large",
+    "weight": 23.0,
+    "age": 5,
+    "activeLvl": 1.4,
+    "calPerKg": 3400,
+    "feedingCount": 2
+  },
+  "쿠키": {
+    "breed": "푸들",
+    "size": "small",
+    "weight": 4.2,
+    "age": 6,
+    "activeLvl": 1.6,
+    "calPerKg": 3500,
+    "feedingCount": 2
+  },
+  "삐삐": {
+    "breed": "요크셔테리어",
+    "size": "small",
+    "weight": 3.2,
+    "age": 7,
+    "activeLvl": 1.6,
+    "calPerKg": 3500,
+    "feedingCount": 2
+  }
+}
