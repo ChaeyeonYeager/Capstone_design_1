@@ -474,6 +474,48 @@ def main(
                 }
                 if best_this_frame is None or yolo_c > best_this_frame["yolo_c"]:
                     best_this_frame = cand
+                    # ---------------------------
+                    # (추가) bounding box 비율 기반 트리거 + 시간 측정
+                    # ---------------------------
+                    if best_this_frame:
+                        size = best_this_frame.get("size", "unknown")
+                        rect = best_this_frame.get("rect", (0, 0, 0, 0))
+                        x1, y1, x2, y2 = rect
+                        box_area = (x2 - x1) * (y2 - y1)
+                        frame_area = width * height
+                        bbox_ratio = box_area / frame_area
+
+                        thresholds = {"small": 0.20, "medium": 0.30, "large": 0.40}
+
+                        if size in thresholds and bbox_ratio >= thresholds[size]:
+                            t_start = time.time()
+                            print(f"[TIME] t_start for {size} detected at {t_start:.3f}s (bbox_ratio={bbox_ratio:.2f})")
+
+                            if ser:
+                                if size == "small":
+                                    ser.write(b'1')
+                                elif size == "medium":
+                                    ser.write(b'2')
+                                elif size == "large":
+                                    ser.write(b'3')
+                                ser.flush()
+                                print(f"[SERIAL] Trigger sent → {size.upper()} servo")
+
+                                # 아두이노 응답 대기 (t_motor)
+                                t_motor = None
+                                start_wait = time.time()
+                                while time.time() - start_wait < 5.0:
+                                    if ser.in_waiting > 0:
+                                        line = ser.readline().decode('utf-8', errors='ignore').strip()
+                                        if line:
+                                            print(f"[Arduino] {line}")
+                                        if "[MOTOR] cycle start" in line:
+                                            t_motor = time.time()
+                                            latency = (t_motor - t_start) * 1000
+                                            print(f"[TIME] t_motor at {t_motor:.3f}s → Delay = {latency:.1f} ms\n")
+                                            break
+                            else:
+                                print("[SERIAL] Fake trigger (no serial connected)")
 
         if best_this_frame:
             best = best_this_frame
