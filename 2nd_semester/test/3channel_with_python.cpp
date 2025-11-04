@@ -4,13 +4,8 @@
 #include <math.h>
 
 /* ===========================================
- *  단일 급식기 (메인 서보만 동작)
-시리얼로 1, 2, 3 입력을 주었을 때, 각각 소형, 중형, 대형견용 사료통의 서보 모터가 동작 함.
- *  - 1: 소형 세트 (무게감지 포함)
- *  - 2: 중형 세트
- *  - 3: 대형 세트
- *  - 'r': 무게감지 테스트 (소형 세트용)
- * 
+ *  자동 급식 시스템 (3채널 서보 + 3개 로드셀)
+ *  Python → CSV 명령 수신 → 체급별 목표 무게까지 자동 배식
  * =========================================== */
 
 const int FEEDER_COUNT = 3;
@@ -20,7 +15,6 @@ enum FeederType : uint8_t {
   FEEDER_LARGE  = 2
 };
 
-// 현재 선택된 세트
 int currentFeeder = FEEDER_SMALL;
 
 // -------------------------------
@@ -28,32 +22,32 @@ int currentFeeder = FEEDER_SMALL;
 // -------------------------------
 const int SERVO_PIN[FEEDER_COUNT] = {10, 11, 6};
 
-// ✅ 로드셀 (소형 세트 전용)
-const uint8_t HX_DT  = 3;
-const uint8_t HX_SCK = 2;
+// ✅ 각 체급별 로드셀 핀 (DT, SCK)
+const uint8_t HX_DT[FEEDER_COUNT]  = {3, 5, 7};
+const uint8_t HX_SCK[FEEDER_COUNT] = {2, 4, 6};
 
 Servo servo[FEEDER_COUNT];
-HX711 hx711;
+HX711 hx711[FEEDER_COUNT];
 
 // -------------------------------
-// 로드셀 보정값
+// 로드셀 보정값 (예시)
 // -------------------------------
-const uint32_t CAL_OFFSET = 295745;
-const float    CAL_SCALE  = 872.280761;
-const float BOWL_WEIGHT_G = 100.0f;
-const float TOLERANCE     = 2.0f;
+const uint32_t CAL_OFFSET[FEEDER_COUNT] = {295745, 312000, 305500};
+const float    CAL_SCALE[FEEDER_COUNT]  = {872.280761, 865.4321, 878.992};
+const float BOWL_WEIGHT_G[FEEDER_COUNT] = {100.0, 120.0, 150.0};
+const float TOLERANCE = 2.0f;
 const int   SERVO_STEP_MS = 3;
 const int   SETTLE_MS     = 600;
 
 // -------------------------------
 // 안정된 무게 측정 (g)
 // -------------------------------
-float getSuperStableWeight() {
+float getSuperStableWeight(int feeder) {
   const int N = 10;
   float r[N], sum = 0;
 
   for (int i = 0; i < N; i++) {
-    r[i] = hx711.get_units();
+    r[i] = hx711[feeder].get_units();
     delay(30);
   }
 
@@ -69,10 +63,13 @@ float getSuperStableWeight() {
     }
   }
   float stable = (cnt > 0) ? (fsum / cnt) : avg;
-  stable -= BOWL_WEIGHT_G;
+  stable -= BOWL_WEIGHT_G[feeder];
   if (stable < 0) stable = 0;
 
-  Serial.print("[WEIGHT] net=");
+  Serial.print("[WEIGHT] ");
+  if (feeder == FEEDER_SMALL) Serial.print("SMALL=");
+  else if (feeder == FEEDER_MEDIUM) Serial.print("MEDIUM=");
+  else Serial.print("LARGE=");
   Serial.print(stable, 2);
   Serial.println(" g");
   return stable;
@@ -81,22 +78,54 @@ float getSuperStableWeight() {
 // -------------------------------
 // 메인 서보 동작 (0→165→0)
 // -------------------------------
-void runServoOnce() {
-  Serial.println("[MOTOR] cycle start");
+void runServoOnce(int feeder) {
+  Serial.print("[MOTOR] cycle start (");
+  Serial.print(feeder);
+  Serial.println(")");
   for (int a = 0; a <= 165; a++) {
-    servo[currentFeeder].write(a);
+    servo[feeder].write(a);
     delay(SERVO_STEP_MS);
   }
   delay(100);
   for (int a = 165; a >= 0; a--) {
-    servo[currentFeeder].write(a);
+    servo[feeder].write(a);
     delay(SERVO_STEP_MS);
   }
   Serial.println("[MOTOR] cycle end");
 }
 
 // -------------------------------
-// 파싱 및 급여량 계산 코드 예시
+// 목표 급여량까지 자동 급식
+// -------------------------------
+void feedUntilTarget(int feeder, float target_g) {
+  Serial.print("[TARGET] 목표 급여량(");
+  Serial.print(feeder);
+  Serial.print(") = ");
+  Serial.print(target_g, 1);
+  Serial.println(" g");
+
+  float current = getSuperStableWeight(feeder);
+  int attempt = 0;
+
+  while (current < target_g - TOLERANCE) {
+    Serial.print("[FEED] 사이클 "); Serial.println(++attempt);
+    runServoOnce(feeder);
+    delay(SETTLE_MS);
+    current = getSuperStableWeight(feeder);
+
+    if (attempt >= 20) {  // 안전장치
+      Serial.println("[WARN] 최대 사이클 초과 → 중단");
+      break;
+    }
+  }
+
+  Serial.print("[DONE] 최종 무게 = ");
+  Serial.print(current, 1);
+  Serial.println(" g");
+}
+
+// -------------------------------
+// CSV 수신 + 급여량 계산 + 자동 급식
 // -------------------------------
 void handleSerialCSV() {
   if (Serial.available()) {
@@ -106,7 +135,6 @@ void handleSerialCSV() {
 
     Serial.print("[RECV] "); Serial.println(line);
 
-    // CSV 파싱
     String parts[8];
     int idx = 0;
     while (line.length() > 0 && idx < 8) {
@@ -119,30 +147,26 @@ void handleSerialCSV() {
         line = line.substring(commaIndex + 1);
       }
     }
-
     if (idx < 7) {
       Serial.println("[ERR] CSV 필드 개수가 부족합니다");
       return;
     }
 
-    // -----------------------------
-    // 필드별 파싱
-    // -----------------------------
     String name = parts[0];
     float scorePct = parts[1].toFloat();
     String size = parts[2];
-    float weight = parts[3].toFloat();      // kg
-    float activeLvl = parts[4].toFloat();   // 예: 1.2
-    float calPerKg = parts[5].toFloat();    // kcal/kg/day
-    int feedingCount = parts[6].toInt();    // 2회/일
+    float weight = parts[3].toFloat();
+    float activeLvl = parts[4].toFloat();
+    float calPerKg = parts[5].toFloat();
+    int feedingCount = parts[6].toInt();
 
     // -----------------------------
-    // 체급 → 서보 선택
+    // 체급 → 서보/로드셀 선택
     // -----------------------------
     if (size == "small") currentFeeder = FEEDER_SMALL;
     else if (size == "medium") currentFeeder = FEEDER_MEDIUM;
     else if (size == "large") currentFeeder = FEEDER_LARGE;
-    else currentFeeder = FEEDER_SMALL; // default
+    else currentFeeder = FEEDER_SMALL;
 
     Serial.print("[INFO] Name="); Serial.println(name);
     Serial.print("[INFO] Size="); Serial.println(size);
@@ -150,15 +174,10 @@ void handleSerialCSV() {
     // -----------------------------
     // 급여량 계산
     // -----------------------------
-    // ① RER (Resting Energy Requirement)
     float RER = 70.0 * pow(weight, 0.75);
-    // ② DER (Daily Energy Requirement)
     float DER = RER * activeLvl;
-    // ③ 1회 급여량(g)
-    //    (칼로리/kg/day * 몸무게) = 하루 총 kcal
     float dailyCal = calPerKg * weight;
     float oneMealCal = dailyCal / feedingCount;
-    // 사료 1g당 3.5 kcal 기준 (예시)
     float gramsPerMeal = oneMealCal / 3.5;
 
     Serial.print("[CALC] RER="); Serial.print(RER,1);
@@ -167,14 +186,11 @@ void handleSerialCSV() {
     Serial.println(" g");
 
     // -----------------------------
-    // 서보 동작 (간단 예시)
+    // 목표 무게까지 자동 배식
     // -----------------------------
-    Serial.print("[FEED] "); Serial.print(size);
-    Serial.println(" servo 동작 시작");
-    runServoOnce();
+    feedUntilTarget(currentFeeder, gramsPerMeal);
   }
 }
-
 
 // -------------------------------
 // setup / loop
@@ -183,25 +199,27 @@ void setup() {
   Serial.begin(115200);
   while (!Serial && millis() < 2000) {}
 
-  // 메인 서보 초기화
+  // 서보 초기화
   for (int i = 0; i < FEEDER_COUNT; i++) {
     servo[i].attach(SERVO_PIN[i]);
     delay(200);
     servo[i].write(0);
   }
 
-  // ✅ 로드셀 (소형 세트)
-  hx711.begin(HX_DT, HX_SCK);
-  hx711.set_offset(CAL_OFFSET);
-  hx711.set_scale(CAL_SCALE);
+  // 로드셀 초기화
+  for (int i = 0; i < FEEDER_COUNT; i++) {
+    hx711[i].begin(HX_DT[i], HX_SCK[i]);
+    hx711[i].set_offset(CAL_OFFSET[i]);
+    hx711[i].set_scale(CAL_SCALE[i]);
+  }
 
-  Serial.println("\n[READY] Single Feeder (Main Servo Only)");
-  Serial.println("1: Small (with HX711)");
-  Serial.println("2: Medium");
-  Serial.println("3: Large");
-  Serial.println("r: Read weight (HX711)\n");
+  Serial.println("\n[READY] 3채널 Auto Feeder Ready");
+  Serial.println("[INFO] HX711 Pins:");
+  Serial.println("  small : DT=3, SCK=2");
+  Serial.println("  medium: DT=5, SCK=4");
+  Serial.println("  large : DT=7, SCK=6\n");
 }
 
 void loop() {
-  handleSerialCSV();  // 새 CSV 명령이 오면 급여 수행
+  handleSerialCSV();
 }
