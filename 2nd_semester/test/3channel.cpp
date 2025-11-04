@@ -93,37 +93,42 @@ void runServoOnce() {
 // 시리얼 입력 처리
 // -------------------------------
 void handleSerial() {
+  // 데이터가 없으면 리턴
   if (!Serial.available()) return;
 
-  char c = Serial.read();
-  while (Serial.available()) Serial.read(); // 버퍼 정리
+  // '\n' 기준으로 한 줄 읽기 (타임아웃 내에서 대기)
+  String cmd = Serial.readStringUntil('\n');
+  cmd.trim();  // 공백, \r 제거
 
-  switch (c) {
-    case '1':
-      currentFeeder = FEEDER_SMALL;
-      Serial.println("[SELECT] SMALL FEEDER");
-      runServoOnce();
-      // Serial.println("[SMALL] Measuring weight...");
-      // getSuperStableWeight();
-      break;
+  // 아무 데이터도 없으면 리턴
+  if (cmd.length() == 0) return;
 
-    case '2':
-      currentFeeder = FEEDER_MEDIUM;
-      Serial.println("[SELECT] MEDIUM FEEDER");
-      runServoOnce();
-      break;
+  // 잘못된 입력 대비
+  if (cmd != "1" && cmd != "2" && cmd != "3" && cmd != "r" && cmd != "R") {
+    Serial.print("[WARN] Unknown command: ");
+    Serial.println(cmd);
+    return;
+  }
 
-    case '3':
-      currentFeeder = FEEDER_LARGE;
-      Serial.println("[SELECT] LARGE FEEDER");
-      runServoOnce();
-      break;
-
-    case 'r':
-    case 'R':
-      Serial.println("[TEST] HX711 weight reading");
-      getSuperStableWeight();
-      break;
+  // ---------- 실제 명령 처리 ----------
+  if (cmd == "1") {
+    currentFeeder = FEEDER_SMALL;
+    Serial.println("[SELECT] SMALL FEEDER");
+    runServoOnce();
+  } 
+  else if (cmd == "2") {
+    currentFeeder = FEEDER_MEDIUM;
+    Serial.println("[SELECT] MEDIUM FEEDER");
+    runServoOnce();
+  } 
+  else if (cmd == "3") {
+    currentFeeder = FEEDER_LARGE;
+    Serial.println("[SELECT] LARGE FEEDER");
+    runServoOnce();
+  } 
+  else if (cmd == "r" || cmd == "R") {
+    Serial.println("[TEST] HX711 weight reading");
+    getSuperStableWeight();
   }
 }
 
