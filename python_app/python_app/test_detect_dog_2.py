@@ -493,11 +493,14 @@ def main(
 
                             if ser:
                                 if size == "small":
-                                    ser.write(b'1')
+                                    ser.write(b'1\n')
+                                    ser.flush()
                                 elif size == "medium":
-                                    ser.write(b'2')
+                                    ser.write(b'2\n')
+                                    ser.flush()
                                 elif size == "large":
-                                    ser.write(b'3')
+                                    ser.write(b'3\n')
+                                    ser.flush()
                                 ser.flush()
                                 print(f"[SERIAL] Trigger sent → {size.upper()} servo")
 
