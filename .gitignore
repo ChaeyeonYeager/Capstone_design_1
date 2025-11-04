@@ -2,3 +2,7 @@ venv/
 python_app/python_app/venv/
 __pycache__/
 *.pyc
+.venv/
+__pycache__/
+
+*.pyc
