@@ -4,13 +4,10 @@
 #include <math.h>
 
 /* ===========================================
- *  단일 급식기 (메인 서보만 동작)
-시리얼로 1, 2, 3 입력을 주었을 때, 각각 소형, 중형, 대형견용 사료통의 서보 모터가 동작 함.
- *  - 1: 소형 세트 (무게감지 포함)
- *  - 2: 중형 세트
- *  - 3: 대형 세트
- *  - 'r': 무게감지 테스트 (소형 세트용)
- * 
+ *  단일 급식기 (Python 트리거 → t_motor 전송)
+ *  - '1', '2', '3' 수신 시 대응 서보 모터 동작
+ *  - 모터 시작 직전 시점에 [MOTOR] cycle start 전송
+ *  - (Python이 이걸 받아서 t_motor로 기록)
  * =========================================== */
 
 const int FEEDER_COUNT = 3;
@@ -19,8 +16,6 @@ enum FeederType : uint8_t {
   FEEDER_MEDIUM = 1,
   FEEDER_LARGE  = 2
 };
-
-// 현재 선택된 세트
 int currentFeeder = FEEDER_SMALL;
 
 // -------------------------------
@@ -28,7 +23,7 @@ int currentFeeder = FEEDER_SMALL;
 // -------------------------------
 const int SERVO_PIN[FEEDER_COUNT] = {10, 11, 6};
 
-// ✅ 로드셀 (소형 세트 전용)
+// ✅ 로드셀 (소형 세트)
 const uint8_t HX_DT  = 3;
 const uint8_t HX_SCK = 2;
 
@@ -43,46 +38,44 @@ const float    CAL_SCALE  = 872.280761;
 const float BOWL_WEIGHT_G = 100.0f;
 const float TOLERANCE     = 2.0f;
 const int   SERVO_STEP_MS = 3;
-const int   SETTLE_MS     = 600;
 
 // -------------------------------
-// 안정된 무게 측정 (g)
+// 안정된 무게 측정
 // -------------------------------
-float getSuperStableWeight() {
-  const int N = 10;
-  float r[N], sum = 0;
+// float getSuperStableWeight() {
+//   const int N = 10;
+//   float r[N], sum = 0;
+//   for (int i = 0; i < N; i++) {
+//     r[i] = hx711.get_units();
+//     delay(30);
+//   }
+//   for (int i = 0; i < N; i++) sum += r[i];
+//   float avg = sum / N;
+//   float fsum = 0;
+//   int cnt = 0;
+//   for (int i = 0; i < N; i++) {
+//     if (fabs(r[i] - avg) < 0.02f) {
+//       fsum += r[i];
+//       cnt++;
+//     }
+//   }
+//   float stable = (cnt > 0) ? (fsum / cnt) : avg;
+//   stable -= BOWL_WEIGHT_G;
+//   if (stable < 0) stable = 0;
 
-  for (int i = 0; i < N; i++) {
-    r[i] = hx711.get_units();
-    delay(30);
-  }
-
-  for (int i = 0; i < N; i++) sum += r[i];
-  float avg = sum / N;
-
-  float fsum = 0;
-  int cnt = 0;
-  for (int i = 0; i < N; i++) {
-    if (fabs(r[i] - avg) < 0.02f) {
-      fsum += r[i];
-      cnt++;
-    }
-  }
-  float stable = (cnt > 0) ? (fsum / cnt) : avg;
-  stable -= BOWL_WEIGHT_G;
-  if (stable < 0) stable = 0;
-
-  Serial.print("[WEIGHT] net=");
-  Serial.print(stable, 2);
-  Serial.println(" g");
-  return stable;
-}
+//   Serial.print("[WEIGHT] net=");
+//   Serial.print(stable, 2);
+//   Serial.println(" g");
+//   return stable;
+// }
 
 // -------------------------------
-// 메인 서보 동작 (0→165→0)
+// 메인 서보 동작
 // -------------------------------
 void runServoOnce() {
+  // ✅ Python이 이 시점을 t_motor로 기록함
   Serial.println("[MOTOR] cycle start");
+
   for (int a = 0; a <= 165; a++) {
     servo[currentFeeder].write(a);
     delay(SERVO_STEP_MS);
@@ -92,6 +85,7 @@ void runServoOnce() {
     servo[currentFeeder].write(a);
     delay(SERVO_STEP_MS);
   }
+
   Serial.println("[MOTOR] cycle end");
 }
 
@@ -99,40 +93,37 @@ void runServoOnce() {
 // 시리얼 입력 처리
 // -------------------------------
 void handleSerial() {
-  if (Serial.available()) {
-    char c = Serial.read();
+  if (!Serial.available()) return;
 
-    // 버퍼 정리
-    while (Serial.available()) Serial.read();
+  char c = Serial.read();
+  while (Serial.available()) Serial.read(); // 버퍼 정리
 
-    if (c == '1') {
+  switch (c) {
+    case '1':
       currentFeeder = FEEDER_SMALL;
       Serial.println("[SELECT] SMALL FEEDER");
       runServoOnce();
+      // Serial.println("[SMALL] Measuring weight...");
+      // getSuperStableWeight();
+      break;
 
-      Serial.println("[SMALL] Measuring weight...");
-      float weight = getSuperStableWeight();
-      Serial.print("[RESULT] ");
-      Serial.print(weight);
-      Serial.println(" g\n");
-    }
-    else if (c == '2') {
+    case '2':
       currentFeeder = FEEDER_MEDIUM;
       Serial.println("[SELECT] MEDIUM FEEDER");
       runServoOnce();
-    }
-    else if (c == '3') {
+      break;
+
+    case '3':
       currentFeeder = FEEDER_LARGE;
       Serial.println("[SELECT] LARGE FEEDER");
       runServoOnce();
-    }
-    else if (c == 'r' || c == 'R') {
+      break;
+
+    case 'r':
+    case 'R':
       Serial.println("[TEST] HX711 weight reading");
-      float w = getSuperStableWeight();
-      Serial.print("[CURRENT WEIGHT] ");
-      Serial.print(w);
-      Serial.println(" g");
-    }
+      getSuperStableWeight();
+      break;
   }
 }
 
@@ -143,23 +134,18 @@ void setup() {
   Serial.begin(115200);
   while (!Serial && millis() < 2000) {}
 
-  // 메인 서보 초기화
   for (int i = 0; i < FEEDER_COUNT; i++) {
     servo[i].attach(SERVO_PIN[i]);
     delay(200);
     servo[i].write(0);
   }
 
-  // ✅ 로드셀 (소형 세트)
   hx711.begin(HX_DT, HX_SCK);
   hx711.set_offset(CAL_OFFSET);
   hx711.set_scale(CAL_SCALE);
 
-  Serial.println("\n[READY] Single Feeder (Main Servo Only)");
-  Serial.println("1: Small (with HX711)");
-  Serial.println("2: Medium");
-  Serial.println("3: Large");
-  Serial.println("r: Read weight (HX711)\n");
+  Serial.println("\n[READY] Feeder system ready.");
+  Serial.println("Commands: 1=small, 2=medium, 3=large, r=read weight\n");
 }
 
 void loop() {
