@@ -23,8 +23,8 @@ int currentFeeder = FEEDER_SMALL;
 const int SERVO_PIN[FEEDER_COUNT] = {10, 11, 6};
 
 // ✅ 각 체급별 로드셀 핀 (DT, SCK)
-const uint8_t HX_DT[FEEDER_COUNT]  = {3, 5, 7};
-const uint8_t HX_SCK[FEEDER_COUNT] = {2, 4, 6};
+const uint8_t HX_DT[FEEDER_COUNT]  = {3, 5, 8};
+const uint8_t HX_SCK[FEEDER_COUNT] = {2, 4, 7};
 
 Servo servo[FEEDER_COUNT];
 HX711 hx711[FEEDER_COUNT];
@@ -32,9 +32,9 @@ HX711 hx711[FEEDER_COUNT];
 // -------------------------------
 // 로드셀 보정값 (예시)
 // -------------------------------
-const uint32_t CAL_OFFSET[FEEDER_COUNT] = {295745, 312000, 305500};
-const float    CAL_SCALE[FEEDER_COUNT]  = {872.280761, 865.4321, 878.992};
-const float BOWL_WEIGHT_G[FEEDER_COUNT] = {100.0, 120.0, 150.0};
+const uint32_t CAL_OFFSET[FEEDER_COUNT] = {295745, 312000, 295209};
+const float    CAL_SCALE[FEEDER_COUNT]  = {872.280761, 865.4321, 806.155944};
+const float BOWL_WEIGHT_G[FEEDER_COUNT] = {109.0, 109.0, 109.0};
 const float TOLERANCE = 2.0f;
 const int   SERVO_STEP_MS = 3;
 const int   SETTLE_MS     = 600;
@@ -217,7 +217,7 @@ void setup() {
   Serial.println("[INFO] HX711 Pins:");
   Serial.println("  small : DT=3, SCK=2");
   Serial.println("  medium: DT=5, SCK=4");
-  Serial.println("  large : DT=7, SCK=6\n");
+  Serial.println("  large : DT=8, SCK=7\n");
 }
 
 void loop() {

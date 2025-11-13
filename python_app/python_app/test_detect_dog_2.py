@@ -115,6 +115,9 @@ def load_registered_images(folder="pet_images", verbose=True):
             if verbose: print(f"[WARN] {dog_name}: 사용 가능한 이미지가 없습니다.")
     return reg
 
+# 이 함수로 불러온 모든 등록 강아지의 컬러 이미지를 딥러닝 모델에 통과시켜 각 이미지의 임베딩 벡터 미리 계산
+# pet_images 폴더 내의 각 강아지 이름별 하위 폴더에서 이미지들을 흑백으로 불러옴
+# 각 흑백 이미지에서 orb 특징점과 기술자를 추출
 def load_registered_color_images(folder="pet_images", verbose=True, max_per_name=20, min_side=224):
     reg = {}
     if not os.path.isdir(folder):
@@ -246,7 +249,11 @@ def draw_petdb_overlay(frame, name, breed, pet_db, org=(20, 60), line_gap=24, co
     return frame
 
 # ---------- 품종 인덱서 ----------
+# 딥러닝 모델을 사용해 이미지를 벡터로 변환하고 이 벡터 간의 유사성 비교해 품종 예측
 class BreedIndexer:
+    # 딥러닝 모델 불러 옴
+    # 이 모델은 이미지의 특징을 추출하는 임베딩 벡터 생성하도록 설정
+    # 펫 db를 읽어 강아지 이름과 품종 정보 매핑
     def __init__(self, color_images_by_name, pet_db, device='cpu'):
         self.device = torch.device(device if device else ('cuda' if torch.cuda.is_available() else 'cpu'))
         ResNet50_Weights = getattr(models, "ResNet50_Weights", None)
@@ -302,6 +309,8 @@ class BreedIndexer:
             emb = torch.nn.functional.normalize(feat, dim=1).squeeze(0).cpu().numpy()
         return emb
 
+    # 새로운 강아지 이미지의 임베딩 벡터를 _embed를 통해 계산
+    # 유사도가 가장 높은 순서대로 topk개의 품종과 신뢰도 점수 반환
     def predict_breed(self, roi_bgr, topk=3):
         if not self.breed_centroids: return []
         q = self._embed(roi_bgr)
@@ -318,7 +327,7 @@ class BreedIndexer:
             return [(b, (s - mn) / den) for (b, s) in scores[:max(1, topk)]]
         else:
             return [(scores[0][0], 1.0)]
-
+    # 특정 품종에 속하는 강아지 이름 리스트 반환
     def names_in_breed(self, breed):
         return list(self.breed_to_names.get(breed, []))
 
