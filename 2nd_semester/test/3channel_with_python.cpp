@@ -32,9 +32,9 @@ HX711 hx711[FEEDER_COUNT];
 // -------------------------------
 // 로드셀 보정값 (예시)
 // -------------------------------
-const uint32_t CAL_OFFSET[FEEDER_COUNT] = {67862, -465157, 295209};
-const float    CAL_SCALE[FEEDER_COUNT]  = {1103.293579, 1005.908264, 806.155944};
-const float BOWL_WEIGHT_G[FEEDER_COUNT] = {109.0, 109.0, 109.0};
+const uint32_t CAL_OFFSET[FEEDER_COUNT] = {-293605, -465157, -61378};
+const float    CAL_SCALE[FEEDER_COUNT]  = {-806.216186, 1005.908264, -1103.559692};
+const float BOWL_WEIGHT_G[FEEDER_COUNT] = {107.3, 109.0, 109.0};
 const float TOLERANCE = 2.0f;
 const int   SERVO_STEP_MS = 3;
 const int   SETTLE_MS     = 600;
