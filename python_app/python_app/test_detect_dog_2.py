@@ -40,7 +40,8 @@ BREED_HIST_RATIO  = 0.6
 OVERLAY_FONT_SIZE = 20
 
 # 시리얼 아두이노 포트/속도 (환경에 맞게 변경)
-SERIAL_PORT = "COM6" # 예: macOS /dev/tty.usbmodem*, Windows COM3, Linux /dev/ttyACM0
+SERIAL_PORT = "/dev/cu.usbmodem11201" # 예: macOS /dev/tty.usbmodem*, Windows COM3, Linux /dev/ttyACM0
+# SERIAL_PORT = COM6" 
 SERIAL_BAUD = 115200
 SERIAL_TIMEOUT = 2.0
 
@@ -418,7 +419,7 @@ def main(
     # ✅ 실시간 카메라 입력
     vname = "LiveCamera"
     print(f"\n[PROCESS] 실시간 웹캠 분석 시작")
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(1)
     if not cap.isOpened():
         print("[ERROR] 웹캠을 열 수 없습니다.")
         return

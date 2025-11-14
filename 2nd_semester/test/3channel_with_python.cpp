@@ -32,9 +32,9 @@ HX711 hx711[FEEDER_COUNT];
 // -------------------------------
 // 로드셀 보정값 (예시)
 // -------------------------------
-const uint32_t CAL_OFFSET[FEEDER_COUNT] = {-293605, -465157, -61378};
-const float    CAL_SCALE[FEEDER_COUNT]  = {-806.216186, 1005.908264, -1103.559692};
-const float BOWL_WEIGHT_G[FEEDER_COUNT] = {107.3, 109.0, 109.0};
+const uint32_t CAL_OFFSET[FEEDER_COUNT] = {67862, -465157, 295209};
+const float    CAL_SCALE[FEEDER_COUNT]  = {1103.293579, 1005.908264, 806.155944};
+const float BOWL_WEIGHT_G[FEEDER_COUNT] = {109.0, 109.0, 109.0};
 const float TOLERANCE = 2.0f;
 const int   SERVO_STEP_MS = 3;
 const int   SETTLE_MS     = 600;
@@ -124,6 +124,7 @@ void feedUntilTarget(int feeder, float target_g) {
   Serial.println(" g");
 }
 
+
 // -------------------------------
 // CSV 수신 + 급여량 계산 + 자동 급식
 // -------------------------------
@@ -135,20 +136,45 @@ void handleSerialCSV() {
 
     Serial.print("[RECV] "); Serial.println(line);
 
+    // --- 1. Python의 즉각적인 트리거 (1, 2, 3) 처리 ---
+    // 파이썬이 보낸 b'1\n', b'2\n', b'3\n' 명령을 먼저 확인합니다.
+    if (line == "1") {
+      currentFeeder = FEEDER_SMALL; // 0번 피더
+      Serial.println("[TRIG] Python trigger for SMALL (Feeder 0)");
+      // runServoOnce(currentFeeder); // Python 코드가 응답을 기다리므로 이 함수를 호출합니다.
+      return; // CSV 처리를 건너뜀
+    }
+    if (line == "2") {
+      currentFeeder = FEEDER_MEDIUM; // 1번 피더
+      Serial.println("[TRIG] Python trigger for MEDIUM (Feeder 1)");
+      // runServoOnce(currentFeeder);
+      return; // CSV 처리를 건너뜀
+    }
+    if (line == "3") {
+      currentFeeder = FEEDER_LARGE; // 2번 피더
+      Serial.println("[TRIG] Python trigger for LARGE (Feeder 2)");
+      // runServoOnce(currentFeeder);
+      return; // CSV 처리를 건너뜀
+    }
+    
+    // --- 2. 기존의 전체 CSV 데이터 처리 ---
+    // 위 1, 2, 3이 아니면 전체 CSV로 간주하고 파싱을 시도합니다.
     String parts[8];
     int idx = 0;
-    while (line.length() > 0 && idx < 8) {
-      int commaIndex = line.indexOf(',');
+    String tempLine = line; // line 변수를 직접 수정하지 않도록 복사본 사용
+    while (tempLine.length() > 0 && idx < 8) {
+      int commaIndex = tempLine.indexOf(',');
       if (commaIndex == -1) {
-        parts[idx++] = line;
+        parts[idx++] = tempLine;
         break;
       } else {
-        parts[idx++] = line.substring(0, commaIndex);
-        line = line.substring(commaIndex + 1);
+        parts[idx++] = tempLine.substring(0, commaIndex);
+        tempLine = tempLine.substring(commaIndex + 1);
       }
     }
+    
     if (idx < 7) {
-      Serial.println("[ERR] CSV 필드 개수가 부족합니다");
+      Serial.println("[ERR] CSV 필드 개수가 부족합니다 (무시됨)");
       return;
     }
 
@@ -161,12 +187,12 @@ void handleSerialCSV() {
     int feedingCount = parts[6].toInt();
 
     // -----------------------------
-    // 체급 → 서보/로드셀 선택
+    // 체급 → 서보/로드셀 선택 (CSV의 문자열 기준)
     // -----------------------------
     if (size == "small") currentFeeder = FEEDER_SMALL;
     else if (size == "medium") currentFeeder = FEEDER_MEDIUM;
     else if (size == "large") currentFeeder = FEEDER_LARGE;
-    else currentFeeder = FEEDER_SMALL;
+    else currentFeeder = FEEDER_SMALL; // 기본값
 
     Serial.print("[INFO] Name="); Serial.println(name);
     Serial.print("[INFO] Size="); Serial.println(size);
