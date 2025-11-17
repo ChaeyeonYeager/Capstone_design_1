@@ -53,15 +53,7 @@
     "calPerKg": 3500,
     "feedingCount": 2
   },
-    "모모": {
-    "breed": "사모예드",
-    "size": "large",
-    "weight": 23.0,
-    "age": 5,
-    "activeLvl": 1.4,
-    "calPerKg": 3400,
-    "feedingCount": 2
-  },
+  
   "쿠키": {
     "breed": "푸들",
     "size": "small",

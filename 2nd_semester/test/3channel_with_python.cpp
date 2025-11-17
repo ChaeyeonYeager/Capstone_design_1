@@ -32,8 +32,8 @@ HX711 hx711[FEEDER_COUNT];
 // -------------------------------
 // 로드셀 보정값 (예시)
 // -------------------------------
-const uint32_t CAL_OFFSET[FEEDER_COUNT] = {67862, -465157, 295209};
-const float    CAL_SCALE[FEEDER_COUNT]  = {1103.293579, 1005.908264, 806.155944};
+const int32_t CAL_OFFSET[FEEDER_COUNT] = {-61378, -465157, -293510};
+const float    CAL_SCALE[FEEDER_COUNT]  = {-1103.559692, 1005.908264, -804.594543};
 const float BOWL_WEIGHT_G[FEEDER_COUNT] = {109.0, 109.0, 109.0};
 const float TOLERANCE = 2.0f;
 const int   SERVO_STEP_MS = 3;
@@ -176,16 +176,16 @@ void handleSerialCSV() {
     if (idx < 7) {
       Serial.println("[ERR] CSV 필드 개수가 부족합니다 (무시됨)");
       return;
-    }
+    } 
 
     String name = parts[0];
-    float scorePct = parts[1].toFloat();
+    //float scorePct = parts[1].toFloat();
     String size = parts[2];
     float weight = parts[3].toFloat();
     float activeLvl = parts[4].toFloat();
     float calPerKg = parts[5].toFloat();
     int feedingCount = parts[6].toInt();
-
+    
     // -----------------------------
     // 체급 → 서보/로드셀 선택 (CSV의 문자열 기준)
     // -----------------------------
@@ -202,9 +202,8 @@ void handleSerialCSV() {
     // -----------------------------
     float RER = 70.0 * pow(weight, 0.75);
     float DER = RER * activeLvl;
-    float dailyCal = calPerKg * weight;
-    float oneMealCal = dailyCal / feedingCount;
-    float gramsPerMeal = oneMealCal / 3.5;
+    float oneMealCal = DER / feedingCount;
+    float gramsPerMeal = oneMealCal / calPerKg * 1000;
 
     Serial.print("[CALC] RER="); Serial.print(RER,1);
     Serial.print(" DER="); Serial.print(DER,1);
