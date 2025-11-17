@@ -77,7 +77,7 @@ void runServoOnce() {
   Serial.println("[MOTOR] cycle start");
 
   for (int a = 0; a <= 165; a++) {
-    servo[currentFeeder].write(a);
+    servo[feeder].write(a);
     delay(SERVO_STEP_MS);
   }
   delay(100);
