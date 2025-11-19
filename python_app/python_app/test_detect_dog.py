@@ -38,7 +38,7 @@ BREED_HIST_RATIO  = 0.6
 OVERLAY_FONT_SIZE = 20
 
 # 시리얼 아두이노 포트/속도 (환경에 맞게 변경)
-SERIAL_PORT = "COM6" 
+SERIAL_PORT = "COM8" 
 SERIAL_BAUD = 115200
 SERIAL_TIMEOUT = 0.1 # 타임아웃을 짧게 줄여 메인 루프 지연 방지
 

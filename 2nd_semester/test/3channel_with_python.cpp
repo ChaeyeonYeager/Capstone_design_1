@@ -23,8 +23,8 @@ int currentFeeder = FEEDER_SMALL;
 const int SERVO_PIN[FEEDER_COUNT] = {10, 11, 6};
 
 // ✅ 각 체급별 로드셀 핀 (DT, SCK)
-const uint8_t HX_DT[FEEDER_COUNT]  = {3, 5, 8};
-const uint8_t HX_SCK[FEEDER_COUNT] = {2, 4, 7};
+const uint8_t HX_DT[FEEDER_COUNT]  = {8, 5, 3};
+const uint8_t HX_SCK[FEEDER_COUNT] = {7, 4, 2};
 
 Servo servo[FEEDER_COUNT];
 HX711 hx711[FEEDER_COUNT];
@@ -32,10 +32,10 @@ HX711 hx711[FEEDER_COUNT];
 // -------------------------------
 // 로드셀 보정값 (예시)
 // -------------------------------
-const int32_t CAL_OFFSET[FEEDER_COUNT] = {-61378, -465157, -293510};
-const float    CAL_SCALE[FEEDER_COUNT]  = {-1103.559692, 1005.908264, -804.594543};
-const float BOWL_WEIGHT_G[FEEDER_COUNT] = {109.0, 109.0, 109.0};
-const float TOLERANCE = 2.0f;
+const uint32_t CAL_OFFSET[FEEDER_COUNT] = {-292532, -463774, -63457};
+const float    CAL_SCALE[FEEDER_COUNT]  = {-804.510681, 1003.550476, -1096.633056};
+const float BOWL_WEIGHT_G[FEEDER_COUNT] = {107.3, 109.0, 109.0};
+// const float TOLERANCE = 2.0f;
 const int   SERVO_STEP_MS = 3;
 const int   SETTLE_MS     = 600;
 
@@ -82,12 +82,12 @@ void runServoOnce(int feeder) {
   Serial.print("[MOTOR] cycle start (");
   Serial.print(feeder);
   Serial.println(")");
-  for (int a = 0; a <= 165; a++) {
+  for (int a = 0; a <= 130; a++) {
     servo[feeder].write(a);
     delay(SERVO_STEP_MS);
   }
   delay(100);
-  for (int a = 165; a >= 0; a--) {
+  for (int a = 130; a >= 0; a--) {
     servo[feeder].write(a);
     delay(SERVO_STEP_MS);
   }
@@ -107,13 +107,13 @@ void feedUntilTarget(int feeder, float target_g) {
   float current = getSuperStableWeight(feeder);
   int attempt = 0;
 
-  while (current < target_g - TOLERANCE) {
+  while (current < target_g * 0.95) {
     Serial.print("[FEED] 사이클 "); Serial.println(++attempt);
     runServoOnce(feeder);
     delay(SETTLE_MS);
     current = getSuperStableWeight(feeder);
 
-    if (attempt >= 20) {  // 안전장치
+    if (attempt >= 60) {  // 안전장치
       Serial.println("[WARN] 최대 사이클 초과 → 중단");
       break;
     }
@@ -123,7 +123,6 @@ void feedUntilTarget(int feeder, float target_g) {
   Serial.print(current, 1);
   Serial.println(" g");
 }
-
 
 // -------------------------------
 // CSV 수신 + 급여량 계산 + 자동 급식
@@ -136,63 +135,38 @@ void handleSerialCSV() {
 
     Serial.print("[RECV] "); Serial.println(line);
 
-    // --- 1. Python의 즉각적인 트리거 (1, 2, 3) 처리 ---
-    // 파이썬이 보낸 b'1\n', b'2\n', b'3\n' 명령을 먼저 확인합니다.
-    if (line == "1") {
-      currentFeeder = FEEDER_SMALL; // 0번 피더
-      Serial.println("[TRIG] Python trigger for SMALL (Feeder 0)");
-      // runServoOnce(currentFeeder); // Python 코드가 응답을 기다리므로 이 함수를 호출합니다.
-      return; // CSV 처리를 건너뜀
-    }
-    if (line == "2") {
-      currentFeeder = FEEDER_MEDIUM; // 1번 피더
-      Serial.println("[TRIG] Python trigger for MEDIUM (Feeder 1)");
-      // runServoOnce(currentFeeder);
-      return; // CSV 처리를 건너뜀
-    }
-    if (line == "3") {
-      currentFeeder = FEEDER_LARGE; // 2번 피더
-      Serial.println("[TRIG] Python trigger for LARGE (Feeder 2)");
-      // runServoOnce(currentFeeder);
-      return; // CSV 처리를 건너뜀
-    }
-    
-    // --- 2. 기존의 전체 CSV 데이터 처리 ---
-    // 위 1, 2, 3이 아니면 전체 CSV로 간주하고 파싱을 시도합니다.
     String parts[8];
     int idx = 0;
-    String tempLine = line; // line 변수를 직접 수정하지 않도록 복사본 사용
-    while (tempLine.length() > 0 && idx < 8) {
-      int commaIndex = tempLine.indexOf(',');
+    while (line.length() > 0 && idx < 8) {
+      int commaIndex = line.indexOf(',');
       if (commaIndex == -1) {
-        parts[idx++] = tempLine;
+        parts[idx++] = line;
         break;
       } else {
-        parts[idx++] = tempLine.substring(0, commaIndex);
-        tempLine = tempLine.substring(commaIndex + 1);
+        parts[idx++] = line.substring(0, commaIndex);
+        line = line.substring(commaIndex + 1);
       }
     }
-    
     if (idx < 7) {
-      Serial.println("[ERR] CSV 필드 개수가 부족합니다 (무시됨)");
+      Serial.println("[ERR] CSV 필드 개수가 부족합니다");
       return;
-    } 
+    }
 
     String name = parts[0];
-    //float scorePct = parts[1].toFloat();
+    float age = parts[1].toInt();
     String size = parts[2];
     float weight = parts[3].toFloat();
     float activeLvl = parts[4].toFloat();
     float calPerKg = parts[5].toFloat();
     int feedingCount = parts[6].toInt();
-    
+
     // -----------------------------
-    // 체급 → 서보/로드셀 선택 (CSV의 문자열 기준)
+    // 체급 → 서보/로드셀 선택
     // -----------------------------
     if (size == "small") currentFeeder = FEEDER_SMALL;
     else if (size == "medium") currentFeeder = FEEDER_MEDIUM;
     else if (size == "large") currentFeeder = FEEDER_LARGE;
-    else currentFeeder = FEEDER_SMALL; // 기본값
+    else currentFeeder = FEEDER_SMALL;
 
     Serial.print("[INFO] Name="); Serial.println(name);
     Serial.print("[INFO] Size="); Serial.println(size);
@@ -203,7 +177,7 @@ void handleSerialCSV() {
     float RER = 70.0 * pow(weight, 0.75);
     float DER = RER * activeLvl;
     float oneMealCal = DER / feedingCount;
-    float gramsPerMeal = oneMealCal / calPerKg * 1000;
+    float gramsPerMeal = oneMealCal / 3.5;
 
     Serial.print("[CALC] RER="); Serial.print(RER,1);
     Serial.print(" DER="); Serial.print(DER,1);

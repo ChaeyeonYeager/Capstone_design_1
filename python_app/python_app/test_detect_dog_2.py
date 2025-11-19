@@ -41,7 +41,7 @@ OVERLAY_FONT_SIZE = 20
 
 # 시리얼 아두이노 포트/속도 (환경에 맞게 변경)
 #SERIAL_PORT = "/dev/cu.usbmodem11201" # 예: macOS /dev/tty.usbmodem*, Windows COM3, Linux /dev/ttyACM0
-SERIAL_PORT = "COM6" 
+SERIAL_PORT = "COM8" 
 SERIAL_BAUD = 115200
 SERIAL_TIMEOUT = 2.0
 
