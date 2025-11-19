@@ -113,7 +113,7 @@ void feedUntilTarget(int feeder, float target_g) {
     delay(SETTLE_MS);
     current = getSuperStableWeight(feeder);
 
-    if (attempt >= 60) {  // 안전장치
+    if (attempt >= 60) {
       Serial.println("[WARN] 최대 사이클 초과 → 중단");
       break;
     }
@@ -122,7 +122,11 @@ void feedUntilTarget(int feeder, float target_g) {
   Serial.print("[DONE] 최종 무게 = ");
   Serial.print(current, 1);
   Serial.println(" g");
+
+  // ✅ Python에게 다시 탐지 시작을 알림
+  Serial.println("RESCAN");
 }
+
 
 // -------------------------------
 // CSV 수신 + 급여량 계산 + 자동 급식
